@@ -822,7 +822,7 @@ class SpecBank():
         index = np.where(self.map_pixel_list == ipixel)
         return (int(index[0])) if len(index[0]) else 0
 
-    def read_roach(self, filename, roach_id, pixel_list):
+    def read_roach(self, filename, roach_id, pixel_list, as_float=False):
         """
         Reads a roach file and creates spectrum (roach class) for each 
         input.
@@ -830,6 +830,7 @@ class SpecBank():
             filename (str): name of the roach file
             roach_id (int): number of the roach. e.g. roach0 would be 0
             pixel_list (list): list of pixels we want to process
+            as_float (bool): if True, uses float instead of double.
         """
         pixel_ids = []
         if os.path.isfile(filename):
@@ -842,7 +843,10 @@ class SpecBank():
             ninputs = 4
 
             datatime = nc.variables['Data.Integrate.time'][:]
-            rawdata = nc.variables['Data.Integrate.Data'][:]
+            if as_float:
+                rawdata = np.asarray(nc.variables['Data.Integrate.Data'][:],np.float32)
+            else:
+                rawdata = nc.variables['Data.Integrate.Data'][:]
             input_list = nc.variables['Data.Integrate.Inputs'][:]
 
             acc_n = nc.variables['Data.Integrate.acc_n'][:]
