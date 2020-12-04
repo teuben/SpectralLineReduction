@@ -12,26 +12,34 @@ LIBS += -lnetcdf
 
 LIBS += -lm
 
+CC = gcc
+#CFLAGS = -O3 -std=c99 -Wall
+CFLAGS = -O3 
+
+
 all:	spec_driver_fits
 
 clean:
 	rm -f *.o *~ spec_driver_fits
 
+install: spec_driver_fits
+	cp spec_driver_fits ../bin
+
 Cube.o : Cube.h Cube.c
-	gcc -c Cube.c -O3 $(INCLUDES)
+	$(CC) $(CFLAGS) -c Cube.c $(INCLUDES)
 
 Plane.o : Plane.h Plane.c
-	gcc -c Plane.c -O3 $(INCLUDES)
+	$(CC) $(CFLAGS) -c Plane.c $(INCLUDES)
 
 SpecFile.o : SpecFile.h SpecFile.c
-	gcc -c SpecFile.c -O3 $(INCLUDES)
+	$(CC) $(CFLAGS) -c SpecFile.c $(INCLUDES)
 
 ConvolveFunction.o : ConvolveFunction.h ConvolveFunction.c
-	gcc -c ConvolveFunction.c -O3
+	$(CC) $(CFLAGS) -c ConvolveFunction.c
 
 OTFParameters.o : OTFParameters.h OTFParameters.c
-	gcc -c OTFParameters.c -O3
+	$(CC) $(CFLAGS) -c OTFParameters.c
 
 spec_driver_fits : spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o
-	gcc -o spec_driver_fits -O3 spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o $(INCLUDES) $(LIBS) 
+	$(CC) $(CFLAGS) -o spec_driver_fits spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o $(INCLUDES) $(LIBS) 
 
