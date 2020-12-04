@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Reads a SpecFile and creates a data cube
+Reads a SpecFile and creates a data cube in FITS format
 """
 
 # Python Imports	
