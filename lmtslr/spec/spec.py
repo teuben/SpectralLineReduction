@@ -822,7 +822,7 @@ class SpecBank():
         index = np.where(self.map_pixel_list == ipixel)
         return (int(index[0])) if len(index[0]) else 0
 
-    def read_roach(self, filename, roach_id, pixel_list, as_float=False):
+    def read_roach(self, filename, roach_id, pixel_list, as_float=True):
         """
         Reads a roach file and creates spectrum (roach class) for each 
         input.
