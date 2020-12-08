@@ -14,8 +14,11 @@ LIBS += -lm
 
 CC = gcc
 #CFLAGS = -O3 -std=c99 -Wall
-CFLAGS = -O3 
+CFLAGS = -O3
 
+# just in case
+CFLAGS += `pkg-config --cflags cfitsio netcdf`
+LIBS   += `pkg-config --libs   cfitsio netcdf`
 
 all:	spec_driver_fits
 
