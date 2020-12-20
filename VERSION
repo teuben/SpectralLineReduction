@@ -1,0 +1,3 @@
+20-dec-2020	
+  - Version addead as "Header.Version" to SpecFile
+  - passing RETFREQ, VLSR (VSOURCE), DATE-OBS to Cube FITS file
