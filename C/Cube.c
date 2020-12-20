@@ -8,6 +8,7 @@
 #include <netcdf.h>
 #include "Cube.h"
 #include "SpecFile.h"
+#include "Version.h"
 #include "fitsio.h"
 
 /*************************  CUBE METHODS ***********************************/
@@ -230,8 +231,8 @@ void write_fits_cube(Cube *C, char *filename)
   float *buffer;
   fitsfile *fptr;
 
-  char ctype[20], cunit[20];
-  float crval, cdelt, crpix;
+  char ctype[20], cunit[20], comment[60];
+  float crval, cdelt, crpix, bmaj, bpa;
   
   naxis = 3;
   naxes[0] = C->n[X_AXIS];
@@ -265,13 +266,33 @@ void write_fits_cube(Cube *C, char *filename)
       printf("TELESCOP\n");
       print_fits_error(status);
     }
+  // INSTRUME is not in https://heasarc.gsfc.nasa.gov/docs/fcg/common_dict.html
+  strcpy(comment,"or WARES ?");  
+  if((retval=fits_update_key(fptr, TSTRING, "INSTRUME", "SEQUOIA", comment, &status)) != 0)
+    {
+      printf("INSTRUME\n");
+      print_fits_error(status);
+    }
   if((retval=fits_update_key(fptr, TSTRING, "OBJECT  ", C->source, " ", &status)) != 0)
     {
       printf("OBJECT\n");
       print_fits_error(status);
     }
+  strcpy(comment,"Data.TelescopeBackend.TelTime");
+  if((retval=fits_update_key(fptr, TSTRING, "DATE-OBS", C->date_obs, comment, &status)) != 0)
+    {
+      printf("DATE-OBS\n");
+      print_fits_error(status);
+    }
+  strcpy(comment,"Software version");
+  if((retval=fits_update_key(fptr, TSTRING, "ORIGIN  ", LMTSLR_VERSION, comment, &status)) != 0)
+    {
+      printf("ORIGIN\n");
+      print_fits_error(status);
+    }
+  strcpy(comment,"LMT observing number");  
   obsnum = (long)C->obsnum;
-  if((retval=fits_update_key(fptr, TLONG,   "OBSNUM  ", &obsnum, " ", &status)) != 0)
+  if((retval=fits_update_key(fptr, TLONG,   "OBSNUM  ", &obsnum, comment, &status)) != 0)
     {
       printf("OBSNUM\n");
       print_fits_error(status);
@@ -348,7 +369,7 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
-  strcpy(ctype,"VELO_LSR");          // nominal projection
+  strcpy(ctype,"VELO-LSR");          // nominal projection  
   crval = C->crval[Z_AXIS]*1000.;    // m/s
   cdelt = C->cdelt[Z_AXIS]*1000.;    // m/s
   crpix = C->crpix[Z_AXIS];
@@ -379,6 +400,25 @@ void write_fits_cube(Cube *C, char *filename)
       printf("CUNIT3 %s\n",cunit);
       print_fits_error(status);
     }
+
+  strcpy(cunit,"deg     ");
+  bmaj = C->resolution_size / 3600.;
+  if((retval=fits_update_key(fptr, TFLOAT,  "BMAJ    ", &bmaj, cunit, &status)) != 0)
+    {
+      printf("BMAJ %f\n",bmaj);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "BMIN    ", &bmaj, cunit, &status)) != 0)
+    {
+      printf("BMIN %f\n",bmaj);
+      print_fits_error(status);
+    }
+  bpa = 0.0;
+  if((retval=fits_update_key(fptr, TFLOAT,  "BPA     ", &bpa, cunit, &status)) != 0)
+    {
+      printf("BPA %f\n",bmaj);
+      print_fits_error(status);
+    }
       
 
   strcpy(radesys,"FK5     ");
@@ -391,6 +431,36 @@ void write_fits_cube(Cube *C, char *filename)
   if((retval=fits_update_key(fptr, TSTRING, "RADESYS ", radesys, " ", &status)) != 0)
     {
       printf("RADESYS %s\n", radesys);
+      print_fits_error(status);
+    }
+
+  strcpy(comment, "Header.Source.Velocity");
+  if((retval=fits_update_key(fptr, TFLOAT,  "VLSR", &C->vlsr, comment, &status)) != 0)
+    {
+      printf("VLSR %f\n", C->vlsr);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "VSOURCE", &C->vlsr, comment, &status)) != 0)
+    {
+      printf("VSOURCE %f\n", C->vlsr);
+      print_fits_error(status);
+    }
+  // alma: ZSOURCE  (even astropy claims this is the preferred one)
+  // alma: LINTRN
+
+  strcpy(comment, "Header.Sequoia.LineFreq");
+  if((retval=fits_update_key(fptr, TDOUBLE,  "RESTFRQ", &C->restfreq, comment, &status)) != 0)
+    {
+      printf("RESTFRQ %f\n", C->restfreq);
+      print_fits_error(status);
+    }
+
+  // @todo this is assumed here, but should be fixed if upstream not VELO-LSR was choosen
+  strcpy(cunit,"LSRK");
+  strcpy(cunit,"could be wrong");
+  if((retval=fits_update_key(fptr, TSTRING,  "SPECSYS", cunit, comment, &status)) != 0)
+    {
+      printf("SPECSYS %s\n", cunit);
       print_fits_error(status);
     }
 
