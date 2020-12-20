@@ -420,7 +420,6 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
       
-
   strcpy(radesys,"FK5     ");
   equinox = 2000.;
   if((retval=fits_update_key(fptr, TFLOAT,  "EQUINOX ", &equinox, " ", &status)) != 0)
@@ -434,7 +433,7 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
-  strcpy(comment, "Header.Source.Velocity");
+  strcpy(comment, "Header.LineData.VSource");
   if((retval=fits_update_key(fptr, TFLOAT,  "VLSR", &C->vlsr, comment, &status)) != 0)
     {
       printf("VLSR %f\n", C->vlsr);
@@ -448,7 +447,7 @@ void write_fits_cube(Cube *C, char *filename)
   // alma: ZSOURCE  (even astropy claims this is the preferred one)
   // alma: LINTRN
 
-  strcpy(comment, "Header.Sequoia.LineFreq");
+  strcpy(comment, "Header.LineData.LineRestFrequency");
   if((retval=fits_update_key(fptr, TDOUBLE,  "RESTFRQ", &C->restfreq, comment, &status)) != 0)
     {
       printf("RESTFRQ %f\n", C->restfreq);
