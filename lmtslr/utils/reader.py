@@ -194,6 +194,8 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
     specbank = SpecBankData(files, ifproc,
                             pixel_list=list_of_pixels, bank=bank)
 
+    print("RESTFREQ %g GHz" % specbank.line_rest_frequency)
+
     # check whether to use calibration and open necessary file
     if use_calibration == True:
         specbank.cal_flag = False
@@ -298,6 +300,6 @@ def count_otf_spectra(specbank, list_of_pixels):
         n_spectra = len(specbank.roach[i].xmap[specbank.roach[i].ons])
         total_spectra = total_spectra + n_spectra
         print(ipix, n_spectra, total_spectra)
-    print('Total Number of Spectra = %d' % (total_spectra))
+    print('Total Number of OTF Spectra = %d' % (total_spectra))
     return total_spectra
 
