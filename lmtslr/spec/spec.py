@@ -625,6 +625,8 @@ class SpecBank():
         self.elev = self.ifproc.elev
         self.obspgm = self.ifproc.obspgm
         self.source = self.ifproc.source
+        self.vlsr = self.ifproc.vlsr              # PJT
+        self.date_obs = self.ifproc.date_obs      # PJT
         self.map_coord = self.ifproc.map_coord
 
         # timing offsets for each roach board
@@ -835,7 +837,7 @@ class SpecBank():
         pixel_ids = []
         if os.path.isfile(filename):
             nc = netCDF4.Dataset(filename)
-            print('read_roach', filename)
+
             # header information
             obsnum = nc.variables['Header.Telescope.ObsNum'][0]
             nchan = nc.variables['Header.Mode.numchannels'][0]
@@ -853,6 +855,9 @@ class SpecBank():
             sync_time = nc.variables['Data.Integrate.sync_time'][:]
             read_time = nc.variables['Data.Integrate.read_time'][:]
             datatime = datatime - read_time
+
+            print('read_roach %s     nspec,nchan=%d,%d' %
+                  (filename, rawdata.shape[0], rawdata.shape[1]))
             
             # get roach index
             roach_index = roach_id
