@@ -16,6 +16,7 @@ import numpy as np
 
 class SpecFile():
     def __init__(self, ifproc, specbank, pix_list):
+        self.version = "20-dec-2020"
         self.ifproc = ifproc
         self.specbank = specbank
         self.pix_list = pix_list
@@ -60,6 +61,11 @@ class SpecFile():
         nc_dimension_nlabel = self.ncout.createDimension('nlabel', 20)
 
     def _create_nc_header(self):
+        # a version header
+        nc_version = self.ncout.createVariable('Header.Version', 'c', ('nlabel',))
+        #nc_version[0:len(self.version)] = self.version[0:len(self.version)]
+        nc_version[0:len(self.version)] = self.version
+        
         # the Observation Header
         nc_obsnum = self.ncout.createVariable('Header.Obs.ObsNum', 'i4')
         self.ncout.variables['Header.Obs.ObsNum'][0] = self.specbank.obsnum
@@ -82,27 +88,21 @@ class SpecFile():
             self.ncout.variables['Header.Obs.XPosition'][0] = 0.0
             self.ncout.variables['Header.Obs.YPosition'][0] = 0.0
 
-        if True:
-            # pjt:   pass RESTFREQ, and VLSR and DATE-OBS
-            nc_rf = self.ncout.createVariable('Header.LineData.LineRestFrequency', 'f8')
-            self.ncout.variables['Header.LineData.LineRestFrequency'][0] = self.specbank.line_rest_frequency * 1e9 
-            nc_vlsr = self.ncout.createVariable('Header.Source.Velocity', 'f4')
-            self.ncout.variables['Header.Source.Velocity'][0] = self.specbank.vlsr
-            nc_do = self.ncout.createVariable('Header.Source.DateObs', 'c', ('nlabel',))
-            #self.ncout.variables['Header.Source.DateObs'][0] = self.specbank.date_obs
-            nc_do[0:len(self.specbank.date_obs)] = self.specbank.date_obs[0:len(self.specbank.date_obs)]
-            # this made me mad, is that friendly python programming?
+        # PjT new DATE-OBS
+        nc_do = self.ncout.createVariable('Header.Obs.DateObs', 'c', ('nlabel',))
+        #self.ncout.variables['Header.Source.DateObs'][0] = self.specbank.date_obs
+        nc_do[0:len(self.specbank.date_obs)] = self.specbank.date_obs[0:len(self.specbank.date_obs)]
+        # this made me mad, is that friendly python programming?
          
         # using line header information derived from spec bank
 
         ncl = NetCDFLineHeader(self.ncout)
         ncl.write_line_header_variables(self.L) # write using the result of trial run
 
-        # PJT why does this LD writing not work?
+        # PJT write the additional Header.LineData (hacked)
         LD = LineData(self.ifproc, self.specbank.bank, self.specbank.nchan,
                       self.specbank.bandwidth, np.zeros(self.specbank.nchan))
-        print("PJT RESTFREQ LD frest",LD.frest)
-        #ncl.write_line_data_header_variables(LD)
+        ncl.write_line_data_header_variables(LD)
 
     def _create_nc_data(self):
         # set up the grid geometry
