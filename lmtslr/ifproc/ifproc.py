@@ -13,6 +13,7 @@ python 3
 """
 
 import numpy as np
+import datetime
 import netCDF4
 import os
 import fnmatch
@@ -91,6 +92,17 @@ class IFProc():
             self.header = hdr.make_nominal_header()
             self.source = b''.join(self.nc.variables['Header.Source.SourceName'
                                                     ][:]).decode().strip()
+            self.vlsr = self.nc.variables['Header.Source.Velocity'][0]
+
+            date_obs = self.nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
+            self.date_obs = datetime.datetime.fromtimestamp(date_obs).strftime('%Y-%m-%dT%H:%M:%S')
+            print("%s begin %s" % (self.date_obs, self.filename))
+
+            date_obs2 = self.nc.variables['Data.TelescopeBackend.TelTime'][-1:].tolist()[0]
+            date_obs2 = datetime.datetime.fromtimestamp(date_obs2).strftime('%Y-%m-%dT%H:%M:%S')
+            print("%s end   %s" % (date_obs2, self.filename))            
+            
+            
             self.source_RA = self.nc.variables['Header.Source.Ra'][0]
             self.source_Dec = self.nc.variables['Header.Source.Dec'][0]
             self.obspgm = b''.join(self.nc.variables['Header.Dcs.ObsPgm'][:]
