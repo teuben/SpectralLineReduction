@@ -7,7 +7,7 @@ date: Feb 2020
 """
 
 import netCDF4
-import os
+import os,sys
 from lmtslr.spec.spec import SpecBankData
 from lmtslr.reduction.line_reduction import LineData, NetCDFLineHeader
 from lmtslr.utils.reader import count_otf_spectra
@@ -81,9 +81,28 @@ class SpecFile():
         else:
             self.ncout.variables['Header.Obs.XPosition'][0] = 0.0
             self.ncout.variables['Header.Obs.YPosition'][0] = 0.0
+
+        if True:
+            # pjt:   pass RESTFREQ, and VLSR and DATE-OBS
+            nc_rf = self.ncout.createVariable('Header.LineData.LineRestFrequency', 'f8')
+            self.ncout.variables['Header.LineData.LineRestFrequency'][0] = self.specbank.line_rest_frequency * 1e9 
+            nc_vlsr = self.ncout.createVariable('Header.Source.Velocity', 'f4')
+            self.ncout.variables['Header.Source.Velocity'][0] = self.specbank.vlsr
+            nc_do = self.ncout.createVariable('Header.Source.DateObs', 'c', ('nlabel',))
+            #self.ncout.variables['Header.Source.DateObs'][0] = self.specbank.date_obs
+            nc_do[0:len(self.specbank.date_obs)] = self.specbank.date_obs[0:len(self.specbank.date_obs)]
+            # this made me mad, is that friendly python programming?
+         
         # using line header information derived from spec bank
+
         ncl = NetCDFLineHeader(self.ncout)
-        ncl.write_line_header_variables(self.L) # write using the result of trial run             
+        ncl.write_line_header_variables(self.L) # write using the result of trial run
+
+        # PJT why does this LD writing not work?
+        LD = LineData(self.ifproc, self.specbank.bank, self.specbank.nchan,
+                      self.specbank.bandwidth, np.zeros(self.specbank.nchan))
+        print("PJT RESTFREQ LD frest",LD.frest)
+        #ncl.write_line_data_header_variables(LD)
 
     def _create_nc_data(self):
         # set up the grid geometry
@@ -101,11 +120,19 @@ class SpecFile():
         nc_data.units = 'K'
 
         count = 0
+        
+        sys.stdout.write("Looping over pixel list %s: " % str(self.pix_list))
+        sys.stdout.flush()        
+
         for ipix in self.pix_list:
+            # @todo: find a nice progress meter
+            sys.stdout.write("%d " % ipix)
+            sys.stdout.flush()
+            # 
             i = self.specbank.find_pixel_index(ipix)
             n_spectra = len(self.specbank.roach[i].xmap[self.specbank.roach[i].ons])
-            x_spectra = self.specbank.roach[i].xmap[self.specbank.roach[i].ons] # x coordinate
-            y_spectra = self.specbank.roach[i].ymap[self.specbank.roach[i].ons] # y coordinate
+            x_spectra =     self.specbank.roach[i].xmap[self.specbank.roach[i].ons] # x coordinate
+            y_spectra =     self.specbank.roach[i].ymap[self.specbank.roach[i].ons] # y coordinate
             if self.ifproc.map_coord == 0:
                 gx,gy = theGrid.azel(self.specbank.elev/180. * np.pi,
                                      self.ifproc.tracking_beam)
@@ -113,7 +140,6 @@ class SpecFile():
                 parang = np.mean(self.specbank.roach[i].pmap[self.specbank.roach[i].ons]) # average parang
                 gx,gy = theGrid.radec(self.specbank.elev/180. * np.pi, parang,
                                       self.ifproc.tracking_beam)
-
             for j in range(n_spectra):
                 # process each spectrum
                 L = LineData(self.ifproc, self.specbank.bank,
@@ -132,6 +158,9 @@ class SpecFile():
                 nc_x[count] = x_spectra[j]-gx[ipix]
                 nc_y[count] = y_spectra[j]-gy[ipix]
                 count = count + 1
+        sys.stdout.write(".  [%d]\n" % count)
+        sys.stdout.flush()
+                
 
             
     def open_output_netcdf(self, output_file_name):
