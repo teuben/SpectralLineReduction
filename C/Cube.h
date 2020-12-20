@@ -15,6 +15,12 @@ typedef struct
   float crval[3], crpix[3], cdelt[3];
   char ctype[3][16], units[3][16];
   int n[3],ncube,nplane;
+  // new for provenance    ; or use a OTF pointer
+  // still todo: HISTORY
+  double restfreq;
+  float vlsr;
+  char date_obs[20];
+  float resolution_size;
 } Cube;
 
 void initialize_cube(Cube* C, int *n);
