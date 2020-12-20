@@ -6,6 +6,7 @@
 #include "ConvolveFunction.h"
 #include "OTFParameters.h"
 #include "SpecFile.h"
+#include "Version.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,28 +21,37 @@ int main(int argc, char *argv[])
   int i,j,k;
   int ii,jj;
   int ix,iy,iz,ixp,iyp,izp;
+  int ngood=0;
   float x,y,X,Y,distance,weight,rmsweight;
   int n[3];
 
-  printf("1\n");
+  printf("%s %s\n", argv[0], LMTSLR_VERSION);
+
+  //printf("1\n");
   // initialize
   initialize_otf_parameters(&OTF, argc, argv);
-  printf("2\n");
+  //printf("2\n");
 
   // read the first SpecFile 
   read_spec_file(&S, OTF.i_filename[0]);
-  printf("3\n");
+  //printf("3\n");
   // copy over obs header variables
   C.obsnum = S.obsnum;
   printf("%d\n",C.obsnum);
-  printf("%s\n",S.source);
-  strncpy(C.source,S.source,18);
+  //printf("%s\n",S.source);
+  strncpy(C.source,S.source,18);  // 18, seriously?   - there's 20, 32 and now 18?
   printf("%s\n",C.source);
+  strncpy(C.date_obs,S.date_obs,20); 
+  printf("DATE-OBS %s\n",C.date_obs);  
   C.x_position = S.x_position;
   C.y_position = S.y_position;
+  // 
+  C.resolution_size = OTF.resolution_size;
+  C.restfreq = S.restfreq;
+  C.vlsr = S.vlsr;
   // set up convolution array for the gridding process.
   initialize_convolve_function(&CF, OTF.resolution_size, OTF.cell_size, OTF.rmax, OTF.nsamples);
-  printf("4\n");
+  //printf("4\n");
   if(OTF.otf_select == 1)
     initialize_jinc_filter(&CF, OTF.otf_jinc_a, OTF.otf_jinc_b, OTF.otf_jinc_c);
   else if(OTF.otf_select == 2)
@@ -61,7 +71,7 @@ int main(int argc, char *argv[])
   n[1] = 2 * (int)(floor((OTF.y_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
   n[2] = S.nchan;
 
-  printf("5\n");
+  //printf("5\n");
   initialize_cube(&C, n);
   // note that we add one to crpix's per fits convention
   initialize_cube_axis(&C, Z_AXIS, S.CRVAL, S.CRPIX+1., S.CDELT, S.CTYPE, "km/s");
@@ -71,7 +81,7 @@ int main(int argc, char *argv[])
   initialize_plane(&Weight, n);
   initialize_plane_axis(&Weight, PLANE_X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
   initialize_plane_axis(&Weight, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
-  printf("6\n");
+  //printf("6\n");
 
   free_spec_file(&S);
   printf("axes initialized\n");
@@ -92,6 +102,7 @@ int main(int argc, char *argv[])
 	    {
 	      if(S.RMS[i] < OTF.rms_cutoff)
 		{
+		  ngood++;
 		  spectrum = get_spectrum(&S,i);
 		  ix = cube_axis_index(&C, X_AXIS, S.XPos[i]);
 		  iy = cube_axis_index(&C, Y_AXIS, S.YPos[i]);
@@ -122,7 +133,7 @@ int main(int argc, char *argv[])
       free_spec_file(&S);
     }
 
-  printf("Cube Completed\n");
+  printf("Cube Completed, %d spectra accepted\n",ngood);
 
   // compute averages for each map point; if no data assign NAN
   for(i=0;i<C.n[X_AXIS];i++)
@@ -152,9 +163,17 @@ int main(int argc, char *argv[])
   izp = plane_index(&Weight, 0.0, 0.0);
   printf("Weight of %f %f is %f\n",0.0,0.0,Weight.plane[izp]);
   iz = cube_z_index(&C, 0.0, 0.0);
+#if 1
+  // debug
+  FILE *fp = fopen("spec-tmp.tab","w!");
+  for(i=0;i<S.nchan;i++)
+    fprintf(fp,"%d %8.3f %6.2f\n ",i, C.caxis[Z_AXIS][i],C.cube[iz+i]);
+  fclose(fp);
+#else
   for(i=0;i<S.nchan;i++)
     printf("%d %8.3f %6.2f\n ",i, C.caxis[Z_AXIS][i],C.cube[iz+i]);
-
+#endif
+  
   printf("write to %s\n",OTF.o_filename);
   // finally write the data cube as FITS file
   write_fits_cube(&C, OTF.o_filename);
