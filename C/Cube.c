@@ -457,7 +457,7 @@ void write_fits_cube(Cube *C, char *filename)
 
   // @todo this is assumed here, but should be fixed if upstream not VELO-LSR was choosen
   strcpy(cunit,"LSRK");
-  strcpy(cunit,"could be wrong");
+  strcpy(comment,"could be wrong");
   if((retval=fits_update_key(fptr, TSTRING,  "SPECSYS", cunit, comment, &status)) != 0)
     {
       printf("SPECSYS %s\n", cunit);
