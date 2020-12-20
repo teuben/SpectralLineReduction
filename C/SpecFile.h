@@ -16,6 +16,9 @@ typedef struct
   int obsnum;
   char source[20];
   double x_position, y_position;
+  double restfreq;
+  float vlsr;
+  char date_obs[20];
   // axis parameters from line header
   double CRPIX, CRVAL, CDELT;
   double *CAXIS;
@@ -27,6 +30,7 @@ typedef struct
   float *XPos;
   float *YPos;
   float *RMS;
+  double *Date;  // not used yet
 } SpecFile;
   
 
