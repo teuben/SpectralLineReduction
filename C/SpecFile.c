@@ -14,6 +14,7 @@ int read_spec_file(SpecFile *S, char *filename)
   /* dimensions and varid's */
   size_t nspec, nchan;
   int nspec_id, nchan_id, data_id, x_id, y_id, pix_id, seq_id, rms_id;
+  char version[20];
 
   //printf("about to open file %s\n",filename);
 
@@ -37,7 +38,7 @@ int read_spec_file(SpecFile *S, char *filename)
   //printf("Dimensions complete %zu %zu\n",nspec,nchan);
 
   int obsnum_id, source_id,source_x,source_y,crval_id,crpix_id,cdelt_id,ctype_id,caxis_id;
-  int rf_id, vlsr_id, do_id;
+  int rf_id, vlsr_id, do_id, do_version;
   /* Get the varids of the observation header */
   if ((retval = nc_inq_varid(ncid, "Header.Obs.ObsNum", &obsnum_id)))
     ERR(retval);
@@ -50,9 +51,13 @@ int read_spec_file(SpecFile *S, char *filename)
   // PJT hack
   if ((retval = nc_inq_varid(ncid, "Header.LineData.LineRestFrequency", &rf_id)))
     ERR(retval);
-  if ((retval = nc_inq_varid(ncid, "Header.Source.Velocity", &vlsr_id)))
+  if ((retval = nc_inq_varid(ncid, "Header.LineData.VSource", &vlsr_id)))
     ERR(retval);
-  if ((retval = nc_inq_varid(ncid, "Header.Source.DateObs", &do_id)))
+  // Header.LineData.ZSource = 0
+  
+  if ((retval = nc_inq_varid(ncid, "Header.Obs.DateObs", &do_id)))
+    ERR(retval);
+  if ((retval = nc_inq_varid(ncid, "Header.Version", &do_version)))
     ERR(retval);
   
 
@@ -115,6 +120,10 @@ int read_spec_file(SpecFile *S, char *filename)
     ERR(retval);
   if((retval = nc_get_var(ncid,do_id, S->date_obs)) != NC_NOERR)
     ERR(retval);
+  if((retval = nc_get_var(ncid,do_version, version)) != NC_NOERR)
+    ERR(retval);
+  printf("SpecFile version %s\n",version);
+  
 
   if((retval = nc_get_var_double(ncid, crval_id, &S->CRVAL)) != NC_NOERR)
     ERR(retval);

@@ -18,6 +18,7 @@ typedef struct
   double x_position, y_position;
   double restfreq;
   float vlsr;
+  float zsource;
   char date_obs[20];
   // axis parameters from line header
   double CRPIX, CRVAL, CDELT;

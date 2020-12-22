@@ -19,6 +19,7 @@ typedef struct
   // still todo: HISTORY
   double restfreq;
   float vlsr;
+  float zsource;
   char date_obs[20];
   float resolution_size;
 } Cube;

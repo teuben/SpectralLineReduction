@@ -775,7 +775,7 @@ class NetCDFLineHeader():
         """
         Writes creates line header variables for a NetCDF file.
         Args:
-            L (object): Line object
+            L (object): LineData object
         Returns:
             none
         """
@@ -877,10 +877,16 @@ class NetCDFLineHeader():
         self.nc.variables['Header.LineData.XType'][0] = L.xtype
         t.long_name = 'Axis Type'
 
-        iarray = self.nc.createVariable('Header.LineData.ChannelNumber', 'i4',
+        if False:
+            # already written in:    Header.Line.ChannelNumbe
+            iarray = self.nc.createVariable('Header.LineData.ChannelNumber', 'i4',
                                         ('nchan',))
-        iarray[0:L.nchan] = L.iarray[0:L.nchan]
-        iarray.long_name = 'Channel Number'
+            iarray[0:L.nchan] = L.iarray[0:L.nchan]
+            iarray.long_name = 'Channel Number'
+
+        if True:
+            # what's below was done elsewhere
+            return
 
         # the following are the generic spectrum axis parameters
 
@@ -922,7 +928,7 @@ class NetCDFLineHeader():
         """
         Reads the header data from a NetCDF file.
         Args:
-            L (object): Line object
+            L (object): LineData object
         Returns:
             none
         """
