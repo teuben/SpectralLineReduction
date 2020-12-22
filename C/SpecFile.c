@@ -128,18 +128,14 @@ int read_spec_file(SpecFile *S, char *filename)
   if((retval = nc_get_var(ncid, caxis_id, S->CAXIS)) != NC_NOERR)
     ERR(retval);
 
-
-
   S->theData = (float *)malloc(nspec*nchan*sizeof(float));
-  if(S->theData == NULL)
+  if(S->theData == NULL) {
     fprintf(stderr,"SpecFile: Error allocating data array\n");
-  else
-    printf("allocated theData\n");
-
+    exit(1);
+  } 
   S->XPos = (float *)malloc(nspec*sizeof(float));
   S->YPos = (float *)malloc(nspec*sizeof(float));
   S->RMS = (float *)malloc(nspec*sizeof(float));
-
   S->Pixel = (int *)malloc(nspec*sizeof(int));
   S->Sequence = (int *)malloc(nspec*sizeof(int));
 
@@ -155,6 +151,22 @@ int read_spec_file(SpecFile *S, char *filename)
     ERR(retval);
   if ((retval = nc_get_var_int(ncid, seq_id, S->Sequence)))
     ERR(retval);
+
+  // compute and report on the extreme positions the array has seen
+
+  double xmin = S->XPos[0],
+         xmax = S->XPos[0],
+         ymin = S->YPos[0],
+         ymax = S->YPos[0];
+  
+  for (i=1; i<nspec; i++) {
+    if (S->XPos[i] < xmin) xmin = S->XPos[i];
+    if (S->XPos[i] > xmax) xmax = S->XPos[i];
+    if (S->YPos[i] < ymin) ymin = S->YPos[i];
+    if (S->YPos[i] > ymax) ymax = S->YPos[i];
+  }
+  printf("X-range: %g %g   Y-Yrange: %g %g\n",xmin,xmax,ymin,ymax);
+  printf("MapSize: %g x %g arcsec\n", xmax-xmin, ymax-ymin);
 
   /* Close the file, freeing all resources. */
   if ((retval = nc_close(ncid)))
