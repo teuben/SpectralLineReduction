@@ -470,6 +470,8 @@ void write_fits_cube(Cube *C, char *filename)
   // close the file
   if((retval=fits_close_file(fptr, &status)) != 0)
     print_fits_error(status);
+
+  //printf("PJT all done\n");
 } 
 
 void print_fits_error(int status)
@@ -479,7 +481,7 @@ void print_fits_error(int status)
     {
       fits_get_errstatus(status, e);
       fprintf(stderr, "%s\n",e);
-      //exit(status);
+      exit(status);
     }
   return;
 }
