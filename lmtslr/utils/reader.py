@@ -299,7 +299,7 @@ def count_otf_spectra(specbank, list_of_pixels):
         i = specbank.find_pixel_index(ipix)
         n_spectra = len(specbank.roach[i].xmap[specbank.roach[i].ons])
         total_spectra = total_spectra + n_spectra
-        print(ipix, n_spectra, total_spectra)
+        #print(ipix, n_spectra, total_spectra)    # now reported when specfile computed
     print('Total Number of OTF Spectra = %d' % (total_spectra))
     return total_spectra
 

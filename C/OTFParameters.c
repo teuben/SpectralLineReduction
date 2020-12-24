@@ -112,68 +112,78 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
   int i;
   int coption;
   /*
-    Default Parameters
+    Default Parameters  (grid_data only exposes 15, with the '=' symbol)
    */
-  strcpy(OTF->o_filename,"test.nc");
-  OTF->rms_cutoff = 10.;
-  OTF->noise_sigma = 0.0;
-  OTF->resolution_size = 14.;
-  OTF->cell_size = 7.;
-  OTF->nsamples = 256;
-  OTF->n_cell = 5;
-  OTF->n_subcell = 2;
+  
+  //                                 // -i=
+  strcpy(OTF->o_filename,"test.nc"); // -o=
+  OTF->resolution_size    = 14.;     // -l=   would be better to use the default for 115 GHz???
+  OTF->cell_size          = 7.;      // -c=
+  for(i=0;i<16;i++) 
+    OTF->use_pixels[i]    = 0;       // -u=   what's the deal with or without []
+  OTF->rms_cutoff         = 10.;     // -z=
+  OTF->noise_sigma        = 0.0;     // -s=
+  OTF->x_extent           = 160.0;   // -x=
+  OTF->y_extent           = 160.0;   // -y=
+  OTF->otf_select         = 1;       // -f=        1=jinc other=gauss
+  OTF->rmax               = 3.0;     // -r=
+  OTF->nsamples           = 256;               // error??? should this not be -n ???
+  OTF->otf_jinc_a         = 1.1;     // -0=
+  OTF->otf_jinc_b         = 4.75;    // -1=
+  OTF->otf_jinc_c         = 2.0;     // -2=
+  
+  OTF->n_cell             = 5;       // -n=   // error???
+  OTF->n_subcell          = 2;       // -m
   OTF->model_spectrum_hpw = 5.;
-  OTF->model_source_amp = 1.;
-  OTF->model_source_hpw = 16.1;
-  OTF->model_source_x = 0.;
-  OTF->model_source_y = 0.;
-  OTF->model_nchan = 64;
+  OTF->model_source_amp   = 1.;
+  OTF->model_source_hpw   = 16.1;
+  OTF->model_source_x     = 0.;
+  OTF->model_source_y     = 0.;
+  OTF->model_nchan        = 64;
 
-  OTF->otf_jinc_a = 1.1;
-  OTF->otf_jinc_b = 4.75;
-  OTF->otf_jinc_c = 2.0;
-  OTF->otf_select = 1; // 1=jinc other=gauss
-  OTF->rmax = 3.0;
-
-  OTF->x_extent = 160.0;
-  OTF->y_extent = 160.0;
-  OTF->sample_step = 1.0;
-  OTF->scan_step = 6.65;
-  for(i=0;i<16;i++)
-    OTF->use_pixels[i] = 0;
+  OTF->sample_step        = 1.0;     // -p   ???     Xstep 
+  OTF->scan_step          = 6.65;    // -q   ???     Ystep
  
   // parse command line arguments
   opterr = 0;
 
+  
+
   while(1)
     {
+      
       static struct option long_options[] =
 	{
-	  {"help",  no_argument, 0, 'h'},
-	  {"input",  required_argument, 0, 'i'},
-	  {"output",  required_argument, 0, 'o'},
-	  {"resolution_size",  required_argument, 0, 'l'},
-	  {"cell_size",  required_argument, 0, 'c'},
-	  {"rms_cutoff", required_argument, 0, 'z'},
-	  {"filter",  required_argument, 0, 'f'},
-	  {"n_cell",  required_argument, 0, 'n'},
-	  {"n_subcell",  required_argument, 0, 'm'},
-	  {"rmax", required_argument, 0, 'r'},
-	  {"filter", required_argument, 0, 'f'},
-	  {"jinc_a",  required_argument, 0, '0'},
-	  {"jinc_b",  required_argument, 0, '1'},
-	  {"jinc_c",  required_argument, 0, '2'},
-	  {"noise_sigma",  required_argument, 0, 's'},
-	  {"x_extent",  required_argument, 0, 'x'},
-	  {"y_extent",  required_argument, 0, 'y'},
-	  {"sample_step",  required_argument, 0, 'p'},
-	  {"scan_step",  required_argument, 0, 'q'},
-	  {"pix_list", required_argument, 0, 'u'},
+	  {"help",             no_argument,       0, 'h'},
+	  
+	  {"input",            required_argument, 0, 'i'},  // 19 real options here
+	  {"output",           required_argument, 0, 'o'},  // 
+	  {"resolution_size",  required_argument, 0, 'l'},  // --resolution
+	  {"cell_size",        required_argument, 0, 'c'},  // --cell
+	  {"pix_list",         required_argument, 0, 'u'},  // --pix_list 
+	  {"rms_cutoff",       required_argument, 0, 'z'},  // --rms_cut
+	  {"noise_sigma",      required_argument, 0, 's'},  // --noise_sigma
+	  {"x_extent",         required_argument, 0, 'x'},  //  --x_extent
+	  {"y_extent",         required_argument, 0, 'y'},  // --y_extent
+	  {"filter",           required_argument, 0, 'f'},  // --otf_select
+	  {"rmax",             required_argument, 0, 'r'},  // --rmax
+	  {"n_cell",           required_argument, 0, 'n'},  // --n_samples      // wrong one?
+	  {"jinc_a",           required_argument, 0, '0'},  // --otf_a
+	  {"jinc_b",           required_argument, 0, '1'},  // --otf_b
+	  {"jinc_c",           required_argument, 0, '2'},  // --otf_c
+
+	  {"n_subcell",        required_argument, 0, 'm'},   // not passed
+	  {"sample_step",      required_argument, 0, 'p'},   // not passed
+	  {"scan_step",        required_argument, 0, 'q'},   // not passed
+	  // undocumented -b flag
+	  // undocumented -j flag
 	  {0,0,0,0}
 	};
-
+      
       int option_index=0;
-      coption = getopt_long(argc, argv, "hi:o:bjl:z:c:n:f:m:s:r:0:1:2:x:y:p:q:u:",long_options,&option_index);
+      //const char *optstring = "hi:o:bjl:z:c:n:f:m:s:r:0:1:2:x:y:p:q:u:";   // original w/ -b,-j
+      static const char *optstring = "i:o:l:c:u:z:s:x:y:f:r:n:0:1:2:m:p:q:h";
+      coption = getopt_long(argc, argv, optstring, long_options,&option_index);
       
       if(coption == -1)
 	break;
@@ -182,7 +192,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
       switch(coption)
 	{
 	case 'h':
-	  for(i=0;i<14;i++)
+	  for(i=0;i<19;i++)
 	    printf("%c %s\n",long_options[i].val,long_options[i].name);
 	  exit(0);
 	case 'i':
@@ -191,9 +201,6 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  break;
 	case 'o':
 	  strcpy(OTF->o_filename,optarg);
-	  break;
-	case 'f':
-	  OTF->otf_select = atoi(optarg);
 	  break;
 	case 'l':
 	  OTF->resolution_size = atof(optarg);
@@ -207,17 +214,34 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	case 'z':
 	  OTF->rms_cutoff = atof(optarg);
 	  break;
-	case 'n':
-	  OTF->n_cell = atoi(optarg);
-	  break;
-	case 'm':
-	  OTF->n_subcell = atoi(optarg);
-	  break;
 	case 's':
 	  OTF->noise_sigma = atof(optarg);
 	  break;
+	case 'x':
+	  OTF->x_extent = atof(optarg);
+	  break;
+	case 'y':
+	  OTF->y_extent = atof(optarg);
+	  break;
+	case 'f':
+	  OTF->otf_select = atoi(optarg);
+	  break;
 	case 'r':
 	  OTF->rmax = atof(optarg);
+	  break;
+	case 'n':
+#if 1
+	  OTF->n_cell = atoi(optarg);        // original code
+	  printf("PJT original n_cell=%d\n",OTF->n_cell);
+	  printf("PJT and     nsample=%d\n",OTF->nsamples);	  
+#else	  
+  	  OTF->nsamples = atoi(optarg);    // PJT
+	  printf("PJT original nsample=%d\n",OTF->nsamples);
+	  printf("PJT and       n_cell=%d\n",OTF->n_cell);
+#endif	  
+	  break;
+	case 'm':
+	  OTF->n_subcell = atoi(optarg);
 	  break;
 	case '0':
 	  OTF->otf_jinc_a = atof(optarg);
@@ -228,12 +252,6 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	case '2':
 	  OTF->otf_jinc_c = atof(optarg);
 	  break;
-	case 'x':
-	  OTF->x_extent = atof(optarg);
-	  break;
-	case 'y':
-	  OTF->y_extent = atof(optarg);
-	  break;
 	case 'p':
 	  OTF->sample_step = atof(optarg);
 	  break;
@@ -241,7 +259,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  OTF->scan_step = atof(optarg);
 	  break;
 	default:
-	  printf("Command Line Argument Problem\n");
+	  printf("Command Line Argument Problem for %c\n",coption);
 	  abort();
 	}
     }

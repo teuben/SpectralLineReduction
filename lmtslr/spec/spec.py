@@ -879,7 +879,7 @@ class SpecBank():
                 ilist0  = np.where(input_list == 0)
                 raw_spec = rawdata[ilist,:][0]
 
-                print('r:%d inp:%d pix:%d to:%f'%(roach_index, input_chan, 
+                print('r:%d inp:%d pix:%d time_offset:%f'%(roach_index, input_chan, 
                     roach_pixels_all[roach_index][input_chan], 
                     self.time_offset[roach_pixels_all[roach_index][input_chan]]))
 

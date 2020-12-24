@@ -59,12 +59,13 @@ int main(int argc, char *argv[])
   else
     initialize_box_filter(&CF, OTF.cell_size/2.);
 
-  /* prints the convolution function
-  printf("n_cell= %d\n",CF.n_cells);
-  printf("r (as)   c\n");
+#if 0
+  // prints the convolution function ; n_cells denotes how much we will use?
+  printf("CF.n_cells= %d\n",CF.n_cells);
+  printf("r(arcsec)  c\n");
   for(i=0;i<256;i++)
     printf("%5.2f %8.4f\n",i*CF.delta, CF.array[i]);
-  */
+#endif
 
   // initialize cube and axes
   n[0] = 2 * (int)(floor((OTF.x_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
@@ -94,6 +95,7 @@ int main(int argc, char *argv[])
       // read the new specfile for gridding
       printf("file %d %s\n",ifile,OTF.i_filename[ifile]);
       read_spec_file(&S, OTF.i_filename[ifile]);
+      int nout = 0;
 
       // now we do the gridding
       for(i=0;i<S.nspec;i++)
@@ -111,9 +113,14 @@ int main(int argc, char *argv[])
 		      for(ii=-CF.n_cells; ii<=CF.n_cells; ii++)
 			for(jj=-CF.n_cells; jj<=CF.n_cells; jj++)
 			  {
+			    if (ix+ii < 0 || iy+jj<0 || ix+ii >= C.n[X_AXIS] || iy+jj >= C.n[Y_AXIS]) {
+			      nout++;
+			      continue;
+			    }
 			    x = S.XPos[i]-C.caxis[X_AXIS][ix+ii];
 			    y = S.YPos[i]-C.caxis[Y_AXIS][iy+jj];
 			    distance = sqrt(x*x+y*y);
+			    // @todo what if S.RMS[i] == 0.0
 			    if ((S.RMS[i] != 0.0) && (OTF.noise_sigma > 0.0)) {
 			      rmsweight = 1.0 /(S.RMS[i] * S.RMS[i]);
 			    } else {
@@ -131,6 +138,7 @@ int main(int argc, char *argv[])
 	    }
 	}
       free_spec_file(&S);
+      printf("Found %d points outside convolving array\n",nout);
     }
 
   printf("Cube Completed, %d spectra accepted\n",ngood);

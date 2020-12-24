@@ -13,10 +13,11 @@ from lmtslr.reduction.line_reduction import LineData, NetCDFLineHeader
 from lmtslr.utils.reader import count_otf_spectra
 from lmtslr.grid.grid import Grid 
 import numpy as np
+from astropy.stats import mad_std
 
 class SpecFile():
     def __init__(self, ifproc, specbank, pix_list):
-        self.version = "20-dec-2020"
+        self.version = "23-dec-2020"
         self.ifproc = ifproc
         self.specbank = specbank
         self.pix_list = pix_list
@@ -88,7 +89,7 @@ class SpecFile():
             self.ncout.variables['Header.Obs.XPosition'][0] = 0.0
             self.ncout.variables['Header.Obs.YPosition'][0] = 0.0
 
-        # PjT new DATE-OBS
+        # PJT new DATE-OBS
         nc_do = self.ncout.createVariable('Header.Obs.DateObs', 'c', ('nlabel',))
         #self.ncout.variables['Header.Source.DateObs'][0] = self.specbank.date_obs
         nc_do[0:len(self.specbank.date_obs)] = self.specbank.date_obs[0:len(self.specbank.date_obs)]
@@ -121,14 +122,11 @@ class SpecFile():
 
         count = 0
         
-        sys.stdout.write("Looping over pixel list %s: " % str(self.pix_list))
-        sys.stdout.flush()        
+        print("Looping over pixel list %s: " % str(self.pix_list))
+        print("Pix Nspec  Mean Std  Max")
 
         for ipix in self.pix_list:
-            # @todo: find a nice progress meter
-            sys.stdout.write("%d " % ipix)
-            sys.stdout.flush()
-            # 
+            count0 = count
             i = self.specbank.find_pixel_index(ipix)
             n_spectra = len(self.specbank.roach[i].xmap[self.specbank.roach[i].ons])
             x_spectra =     self.specbank.roach[i].xmap[self.specbank.roach[i].ons] # x coordinate
@@ -157,10 +155,9 @@ class SpecFile():
                 nc_seq[count] = j
                 nc_x[count] = x_spectra[j]-gx[ipix]
                 nc_y[count] = y_spectra[j]-gy[ipix]
-                count = count + 1
-        sys.stdout.write(".  [%d]\n" % count)
-        sys.stdout.flush()
-                
+                count = count + 1                
+            pdata = nc_data[count0:count,:]
+            print("%d %d   %.3f %.3f %.3f" % (ipix,count-count0,pdata.mean(),mad_std(pdata),pdata.max()))
 
             
     def open_output_netcdf(self, output_file_name):

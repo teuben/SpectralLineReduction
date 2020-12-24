@@ -2,9 +2,9 @@
 #define _CONVOLVE_H_
 
 #define CONVOLVE_UNDEFINED -1
-#define CONVOLVE_BOX 0
-#define CONVOLVE_JINC 1
-#define CONVOLVE_GAUSS 2
+#define CONVOLVE_BOX        0
+#define CONVOLVE_JINC       1
+#define CONVOLVE_GAUSS      2
 
 typedef struct
 {

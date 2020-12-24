@@ -28,28 +28,28 @@ def main(argv):
     if os.path.isfile(Opts.output_file_name) == True:
         os.remove(Opts.output_file_name) 
 
-    print(Opts.pix_list)
-    print(Opts.program_path)
+    print(Opts.pix_list)        # default:  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    print(Opts.program_path)    # default:  'spec_driver_fits' 
     with open('out.txt','w+') as outputfile:
         with open('err.txt','w+') as errorfile:
 
             #exit_code = subprocess.call(['./test_otf','-i',Opts.input_file_name,'-u',Opts.pix_list],stdout=outputfile,stderr=errorfile)
             exit_code=subprocess.call([Opts.program_path,
-                                       '-i',Opts.input_file_name,
+                                       '-i',Opts.input_file_name,     # 15 options are passed on
                                        '-o',Opts.output_file_name,
-                                       '-f',str(Opts.otf_select),
-                                       '-l',str(Opts.resolution),
-                                       '-c',str(Opts.cell),
-                                       '-u',str(Opts.pix_list),
-                                       '-z',str(Opts.rms_cut),
-                                       '-s',str(Opts.noise_sigma),
-                                       '-n',str(Opts.n_samples),
-                                       '-r',str(Opts.rmax),
-                                       '-0',str(Opts.otf_a),
-                                       '-1',str(Opts.otf_b),
-                                       '-2',str(Opts.otf_c),
-                                       '-x',str(Opts.x_extent),
-                                       '-y',str(Opts.y_extent)],
+                                       '-l',str(Opts.resolution),     # --resolution
+                                       '-c',str(Opts.cell),           # --cell
+                                       '-u',str(Opts.pix_list),       # --pix_list 
+                                       '-z',str(Opts.rms_cut),        # --rms_cut
+                                       '-s',str(Opts.noise_sigma),    # --noise_sigma
+                                       '-x',str(Opts.x_extent),       # --x_extent
+                                       '-y',str(Opts.y_extent),       # --y_extent
+                                       '-f',str(Opts.otf_select),     # --otf_select
+                                       '-r',str(Opts.rmax),           # --rmax 
+                                       '-n',str(Opts.n_samples),      # --n_samples
+                                       '-0',str(Opts.otf_a),          # --otf_a
+                                       '-1',str(Opts.otf_b),          # --otf_b
+                                       '-2',str(Opts.otf_c),],        # --otf_c
                                       stdout=outputfile,
                                       stderr=errorfile)
             
