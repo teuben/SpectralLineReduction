@@ -9,10 +9,10 @@ double jinc(double r);
 void initialize_convolve_function(ConvolveFunction *CF, float resolution_size, float cell_size, float rmax, int npts)
 {
   CF->type = CONVOLVE_UNDEFINED;
-  CF->resolution_size = resolution_size;   // this is lambda/D
-  CF->cell_size = cell_size;                // actual cell size
-  CF->rmax = rmax;                         // this is number of lambda/D's to cut off
-  CF->npts = npts;
+  CF->resolution_size = resolution_size;     // this is lambda/D  (PJT: or should it be 1.15 lambda/D ?)
+  CF->cell_size = cell_size;                 // actual cell size
+  CF->rmax = rmax;                           // this is number of lambda/D's to cut off
+  CF->npts = npts;                           // OTF.nsamples
   CF->delta = rmax*resolution_size/(npts-1); // in units of arcsec
   CF->n_cells = (int) floor(rmax*CF->resolution_size/CF->cell_size) + 1;
   CF->array = (float*)malloc(CF->npts*sizeof(float));
