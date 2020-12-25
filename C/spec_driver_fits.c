@@ -59,11 +59,12 @@ int main(int argc, char *argv[])
   else
     initialize_box_filter(&CF, OTF.cell_size/2.);
 
-#if 0
+#if 1
   // prints the convolution function ; n_cells denotes how much we will use?
-  printf("CF.n_cells= %d\n",CF.n_cells);
-  printf("r(arcsec)  c\n");
-  for(i=0;i<256;i++)
+  // @todo the scaling of delta is wrong, but irrelevant
+  printf("CF.n_cells= %d cell=%g  oft_select=%d\n",CF.n_cells,CF.delta,OTF.otf_select);
+  printf("r(arcsec)  conv.array\n");
+  for(i=0;i< 2*CF.n_cells;i++)
     printf("%5.2f %8.4f\n",i*CF.delta, CF.array[i]);
 #endif
 
