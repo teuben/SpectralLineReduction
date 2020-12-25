@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 	    }
 	}
       free_spec_file(&S);
-      printf("Found %d points outside convolving array\n",nout);
+      printf("Found %d points outside convolving array size +/-%d\n",nout,CF.n_cells);
     }
 
   printf("Cube Completed, %d spectra accepted\n",ngood);
