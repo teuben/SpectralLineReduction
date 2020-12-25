@@ -1,2 +1,2 @@
 
-#define LMTSLR_VERSION "LMTSLR 23-dec-2020"
+#define LMTSLR_VERSION "LMTSLR 25-dec-2020"
