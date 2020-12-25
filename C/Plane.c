@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include "Plane.h"
+#include "fitsio.h"
 
 /*************************  PLANE METHODS ***********************************/
 
@@ -74,3 +75,117 @@ int plane_index(Plane *P, float x, float y)
   return(result);
 }
 
+
+void write_fits_plane(Plane *P, char *filename)
+{
+  int i,j,k,ii,ic;
+  int retval, status;
+  int naxis;
+  long naxes[3], obsnum;
+  float equinox;
+  char radesys[20];
+  float *buffer;
+  fitsfile *fptr;
+
+  char ctype[20], cunit[20], comment[60];
+  float crval, cdelt, crpix, bmaj, bpa;
+  
+  naxis = 2;
+  naxes[0] = P->n[PLANE_X_AXIS];
+  naxes[1] = P->n[PLANE_Y_AXIS];
+
+  // create the buffer to reorder the cube to FITS standard
+  buffer = (float*)malloc(P->nplane*sizeof(float));
+
+  ic = 0;
+  i=0;
+  for(j=0;j<P->n[PLANE_Y_AXIS];j++)
+    for(k=0;k<P->n[PLANE_X_AXIS];k++)
+      {
+	ii = i + j*P->n[PLANE_Y_AXIS] + (P->n[PLANE_X_AXIS]-k-1);
+	buffer[ic] = P->plane[ii];
+	ic++;
+      }
+
+  // you MUST initialize status
+  status = 0;
+  if((retval=fits_create_file(&fptr, filename, &status)) != 0)
+    print_fits_error(status);
+
+  if((retval=fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status)) != 0)
+    print_fits_error(status);
+
+  // scale axes to standards
+  strcpy(ctype,"RA---SFL");          // nominal projection Sanson-Flamsteed
+  crval = 0.0;
+  cdelt = -P->cdelt[PLANE_X_AXIS] / 3600.;  // degrees - we flipped the RA axis
+  crpix = P->crpix[PLANE_X_AXIS];
+  strcpy(cunit,"deg     ");
+  if((retval=fits_update_key(fptr, TSTRING, "CTYPE1  ", ctype, " ", &status)) != 0)
+    {
+      printf("CTYPE1 %s\n",ctype);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "CRVAL1  ", &crval, cunit, &status)) != 0)
+    {
+      printf("CRVAL1 %f\n",crval);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "CDELT1  ", &cdelt, cunit, &status)) != 0)
+    {
+      printf("CDELT1 %f\n",cdelt);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "CRPIX1  ", &crpix, " ", &status)) != 0)
+    {
+      printf("CRPIX1 %f\n",crpix);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TSTRING, "CUNIT1  ", cunit, " ", &status)) != 0)
+    {
+      printf("CUNIT1 %s\n",cunit);
+      print_fits_error(status);
+    }
+
+  strcpy(ctype,"DEC--SFL");          // nominal projection Sanson-Flamsteed
+  crval = 0.0;
+  cdelt = P->cdelt[PLANE_Y_AXIS] / 3600.;  // degrees 
+  crpix = P->crpix[PLANE_Y_AXIS];
+  strcpy(cunit,"deg     ");
+  if((retval=fits_update_key(fptr, TSTRING, "CTYPE2  ", ctype, " ", &status)) != 0)
+    {
+      printf("CTYPE2 %s\n",ctype);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "CRVAL2  ", &crval, cunit, &status)) != 0)
+    {
+      printf("CRVAL2 %f\n",crval);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "CDELT2  ", &cdelt, cunit, &status)) != 0)
+    {
+      printf("CDELT2 %f\n",cdelt);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TFLOAT,  "CRPIX2  ", &crpix, " ", &status)) != 0)
+    {
+      printf("CRPIX2 %f\n",crpix);
+      print_fits_error(status);
+    }
+  if((retval=fits_update_key(fptr, TSTRING, "CUNIT2  ", cunit, " ", &status)) != 0)
+    {
+      printf("CUNIT2 %s\n",cunit);
+      print_fits_error(status);
+    }
+
+
+  // write the data cube
+  if((retval=fits_write_img(fptr, TFLOAT, 1, P->nplane, buffer, &status)) != 0)
+    print_fits_error(status);
+
+  // close the file
+  if((retval=fits_close_file(fptr, &status)) != 0)
+    print_fits_error(status);
+
+  //printf("PJT all done\n");
+} 

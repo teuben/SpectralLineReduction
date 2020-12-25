@@ -25,4 +25,6 @@ int plane_axis_index(Plane *P, int axis, float value);
 
 int plane_index(Plane *P, float x, float y);
 
+void write_fits_plane(Plane *P, char *filename);
+void print_fits_error(int);
 #endif
