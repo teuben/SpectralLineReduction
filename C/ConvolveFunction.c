@@ -51,12 +51,12 @@ void initialize_gauss_filter(ConvolveFunction *CF, float a)
   float x;
 
   CF->type = CONVOLVE_GAUSS;
-  CF->gauss_b = a;
+  CF->gauss_b = a;  // at gauss_b=1 this follows exactly the FWHM 
   for(i=0;i<CF->npts;i++)
     {
       // i*delta is distance in arcsec, so we must normalize by lambda/D
       x = (i * CF->delta)/CF->resolution_size / CF->gauss_b;
-      CF->array[i] = exp(-2.77258872*x*x);
+      CF->array[i] = exp(-2.77258872*x*x);   //  2.77.. = 4*ln(2)
     }
 }
 
