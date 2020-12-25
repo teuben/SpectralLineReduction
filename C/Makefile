@@ -16,6 +16,9 @@ CC = gcc
 #CFLAGS = -O3 -std=c99 -Wall
 CFLAGS = -O3
 
+# an extra library (e.g. -lefence)
+ELIBS = 
+
 # just in case
 CFLAGS += `pkg-config --cflags cfitsio netcdf`
 LIBS   += `pkg-config --libs   cfitsio netcdf`
@@ -44,5 +47,5 @@ OTFParameters.o : OTFParameters.h OTFParameters.c
 	$(CC) $(CFLAGS) -c OTFParameters.c
 
 spec_driver_fits : spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o
-	$(CC) $(CFLAGS) -o spec_driver_fits spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o $(INCLUDES) $(LIBS) 
+	$(CC) $(CFLAGS) -o spec_driver_fits spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o $(INCLUDES) $(LIBS)  $(ELIBS)
 
