@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Reads a SpecFile and creates a data cube in FITS format
+Reads a SpecFile and creates a data cube and optional weight map in FITS format
 """
 
 # Python Imports	
@@ -28,15 +28,16 @@ def main(argv):
     if os.path.isfile(Opts.output_file_name) == True:
         os.remove(Opts.output_file_name) 
 
-    print(Opts.pix_list)        # default:  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-    print(Opts.program_path)    # default:  'spec_driver_fits' 
+    #print(Opts.pix_list)        # default:  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    #print(Opts.program_path)    # default:  'spec_driver_fits' 
     with open('out.txt','w+') as outputfile:
         with open('err.txt','w+') as errorfile:
 
             #exit_code = subprocess.call(['./test_otf','-i',Opts.input_file_name,'-u',Opts.pix_list],stdout=outputfile,stderr=errorfile)
             exit_code=subprocess.call([Opts.program_path,
-                                       '-i',Opts.input_file_name,     # 15 options are passed on
+                                       '-i',Opts.input_file_name,     # 16 options are passed on
                                        '-o',Opts.output_file_name,
+                                       '-w',Opts.weight_file_name,
                                        '-l',str(Opts.resolution),     # --resolution
                                        '-c',str(Opts.cell),           # --cell
                                        '-u',str(Opts.pix_list),       # --pix_list 
