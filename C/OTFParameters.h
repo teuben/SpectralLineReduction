@@ -9,6 +9,7 @@ typedef struct
   char i_filename[N_INPUT_FILES][OTF_FILE_NAME_LENGTH];
   int nfiles;
   char o_filename[OTF_FILE_NAME_LENGTH];
+  char w_filename[OTF_FILE_NAME_LENGTH];
   float resolution_size;
   float cell_size;
   float rms_cutoff;
