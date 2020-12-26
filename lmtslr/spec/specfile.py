@@ -123,7 +123,7 @@ class SpecFile():
         count = 0
         
         print("Looping over pixel list %s: " % str(self.pix_list))
-        print("Pix Nspec  Mean Std  Max")
+        print("Pix Nspec  Mean Std MAD_std Max  <RMS> RMS_max")
 
         for ipix in self.pix_list:
             count0 = count
@@ -157,7 +157,20 @@ class SpecFile():
                 nc_y[count] = y_spectra[j]-gy[ipix]
                 count = count + 1                
             pdata = nc_data[count0:count,:]
-            print("%d %d   %.3f %.3f %.3f" % (ipix,count-count0,pdata.mean(),mad_std(pdata),pdata.max()))
+            prms  = nc_rms[count0:count]
+            s1 = pdata.mean()
+            s2 = pdata.std()
+            s3 = mad_std(pdata)
+            s4 = pdata.max()
+            s5 = prms.mean()
+            if s2/s3 > 1.2:
+                s6 = "***"
+            else:
+                s6 = ""
+            s7 = prms.max()
+            print("%d %d   %.3f %.3f %.3f %.3f  %.3f %.3f  %s" %
+                  (ipix,count-count0,s1,s2,s3,s4,s5,s7,s6))
+                   
 
             
     def open_output_netcdf(self, output_file_name):
