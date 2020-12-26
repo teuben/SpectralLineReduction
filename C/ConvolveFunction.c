@@ -45,6 +45,21 @@ void initialize_box_filter(ConvolveFunction *CF, float a)
     }
 }
 
+void initialize_triangle_filter(ConvolveFunction *CF, float a)
+{
+  int i;
+  float x;
+  CF->type = CONVOLVE_BOX;
+  for(i=0;i<CF->npts;i++)
+    {
+      x = (i * CF->delta);
+      if(x<=a)
+	CF->array[i] = 1.0 - x/a;
+      else
+	CF->array[i] = 0.0;
+    }
+}
+
 void initialize_gauss_filter(ConvolveFunction *CF, float a)
 {
   int i;
