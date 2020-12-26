@@ -12,7 +12,7 @@
 int main(int argc, char *argv[])
 {
   Cube C;
-  Plane Weight;
+  Plane Weight, Mask;
   SpecFile S;
   ConvolveFunction CF;
   OTFParameters OTF;
@@ -88,6 +88,11 @@ int main(int argc, char *argv[])
   initialize_plane_axis(&Weight, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
   //printf("6\n");
 
+  initialize_plane(&Mask, n);
+  initialize_plane_axis(&Mask, PLANE_X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
+  initialize_plane_axis(&Mask, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
+  
+
   free_spec_file(&S);
   printf("axes initialized\n");
 
@@ -137,6 +142,8 @@ int main(int argc, char *argv[])
 			      C.cube[iz+k] = C.cube[iz+k] + weight * spectrum[k];
 			    izp = plane_index(&Weight, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
 			    Weight.plane[izp] = Weight.plane[izp] + weight;
+			    if (ii==0 && jj==0)
+			      Mask.plane[izp] = 1;
 			  }		    
 		    }
 		}
@@ -157,7 +164,11 @@ int main(int argc, char *argv[])
 	  y = C.caxis[Y_AXIS][j];
 	  izp = plane_index(&Weight, x, y);
 	  iz = cube_z_index(&C, x, y);
-	  if(Weight.plane[izp] > 0.0)              // PJT   how about != 0.0 instead of > 0.0 - nope
+#if 0	  
+	  if(Weight.plane[izp] > 0.0)    
+#else	    
+	  if(Mask.plane[izp] > 0.0)         //      only expose cells if it had a pixel
+#endif	    
 	    {
 	      for(k=0;k<C.n[Z_AXIS];k++)
 		C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
@@ -194,8 +205,13 @@ int main(int argc, char *argv[])
   write_fits_cube(&C, OTF.o_filename);
   // and the weight plane @todo need a flag for this, 7 times
   if (strlen(OTF.w_filename) > 0) {
-    printf("write weights to %s\n",OTF.w_filename);
     unlink(OTF.w_filename);
+#if 1
+    printf("write weights to %s\n",OTF.w_filename);
     write_fits_plane(&Weight, OTF.w_filename);
+#else
+    printf("write 0/1 mask to %s\n",OTF.w_filename);    
+    write_fits_plane(&Mask, OTF.w_filename);
+#endif    
   }
 }
