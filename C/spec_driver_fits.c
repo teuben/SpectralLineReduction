@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 #include "Cube.h"
 #include "Plane.h"
 #include "ConvolveFunction.h"
@@ -56,15 +57,17 @@ int main(int argc, char *argv[])
     initialize_jinc_filter(&CF, OTF.otf_jinc_a, OTF.otf_jinc_b, OTF.otf_jinc_c);
   else if(OTF.otf_select == 2)
     initialize_gauss_filter(&CF, OTF.otf_jinc_b);
+  else if(OTF.otf_select == 3)
+    initialize_triangle_filter(&CF, OTF.resolution_size);
   else
     initialize_box_filter(&CF, OTF.cell_size/2.);
 
-#if 1
   // prints the convolution function ; n_cells denotes how much we will use?
   // @todo the scaling of delta is wrong, but irrelevant
   printf("CF.n_cells= %d cell=%g  oft_select=%d\n",CF.n_cells,CF.delta,OTF.otf_select);
+#if 0
   printf("r(arcsec)  conv.array\n");
-  for(i=0;i< 2*CF.n_cells;i++)
+  for(i=0;i< CF.npts;i++)
     printf("%5.2f %8.4f\n",i*CF.delta, CF.array[i]);
 #endif
 
@@ -101,6 +104,7 @@ int main(int argc, char *argv[])
       // now we do the gridding
       for(i=0;i<S.nspec;i++)
 	{
+	  //if (i != 10000) continue;  // PJT test
 	  if(OTF.use_pixels[S.Pixel[i]] == 1)
 	    {
 	      if(S.RMS[i] < OTF.rms_cutoff)
@@ -153,7 +157,7 @@ int main(int argc, char *argv[])
 	  y = C.caxis[Y_AXIS][j];
 	  izp = plane_index(&Weight, x, y);
 	  iz = cube_z_index(&C, x, y);
-	  if(Weight.plane[izp]>0.)
+	  if(Weight.plane[izp] > 0.0)              // PJT   how about != 0.0 instead of > 0.0 - nope
 	    {
 	      for(k=0;k<C.n[Z_AXIS];k++)
 		C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
@@ -171,6 +175,8 @@ int main(int argc, char *argv[])
   // dumping the spectrum at 0,0 for fun... 
   izp = plane_index(&Weight, 0.0, 0.0);
   printf("Weight of %f %f is %f\n",0.0,0.0,Weight.plane[izp]);
+  if (Weight.plane[izp] == 0.0)
+    printf("*** Warning: zero weights\n");
   iz = cube_z_index(&C, 0.0, 0.0);
 #if 1
   // debug
@@ -186,4 +192,7 @@ int main(int argc, char *argv[])
   printf("write to %s\n",OTF.o_filename);
   // finally write the data cube as FITS file
   write_fits_cube(&C, OTF.o_filename);
+  // and the weight plane @todo need a flag for this, 7 times
+  unlink("weight.fits");
+  write_fits_plane(&Weight, "weight.fits");
 }
