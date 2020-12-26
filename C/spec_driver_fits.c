@@ -193,6 +193,9 @@ int main(int argc, char *argv[])
   // finally write the data cube as FITS file
   write_fits_cube(&C, OTF.o_filename);
   // and the weight plane @todo need a flag for this, 7 times
-  unlink("weight.fits");
-  write_fits_plane(&Weight, "weight.fits");
+  if (strlen(OTF.w_filename) > 0) {
+    printf("write weights to %s\n",OTF.w_filename);
+    unlink(OTF.w_filename);
+    write_fits_plane(&Weight, OTF.w_filename);
+  }
 }
