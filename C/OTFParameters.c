@@ -111,12 +111,20 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 {
   int i;
   int coption;
-  /*
-    Default Parameters  (grid_data only exposes 15, with the '=' symbol)
-   */
-  
+
+  // debug: show the commandline
+#if 1
+  printf("CMD: ");
+  for (i=0; i<argc; i++)
+    printf("%s ", argv[i]);
+  printf("\n");
+#endif	   
+
+
+  //  Default Parameters  (grid_data only exposes 15, with the '=' symbol)  
   //                                 // -i=
   strcpy(OTF->o_filename,"test.nc"); // -o=
+  strcpy(OTF->w_filename,"");        // -w=   default is no weight file
   OTF->resolution_size    = 14.;     // -l=   would be better to use the default for 115 GHz???
   OTF->cell_size          = 7.;      // -c=
   for(i=0;i<16;i++) 
@@ -156,8 +164,9 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	{
 	  {"help",             no_argument,       0, 'h'},
 	  
-	  {"input",            required_argument, 0, 'i'},  // 19 real options here
-	  {"output",           required_argument, 0, 'o'},  // 
+	  {"input",            required_argument, 0, 'i'},  // 20 real options here
+	  {"output",           required_argument, 0, 'o'},  //
+	  {"weight",           optional_argument, 0, 'w'},  //
 	  {"resolution_size",  required_argument, 0, 'l'},  // --resolution
 	  {"cell_size",        required_argument, 0, 'c'},  // --cell
 	  {"pix_list",         required_argument, 0, 'u'},  // --pix_list 
@@ -182,7 +191,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
       
       int option_index=0;
       //const char *optstring = "hi:o:bjl:z:c:n:f:m:s:r:0:1:2:x:y:p:q:u:";   // original w/ -b,-j
-      static const char *optstring = "i:o:l:c:u:z:s:x:y:f:r:n:0:1:2:m:p:q:h";
+      static const char *optstring = "i:o:w:l:c:u:z:s:x:y:f:r:n:0:1:2:m:p:q:h";
       coption = getopt_long(argc, argv, optstring, long_options,&option_index);
       
       if(coption == -1)
@@ -201,6 +210,9 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  break;
 	case 'o':
 	  strcpy(OTF->o_filename,optarg);
+	  break;
+	case 'w':
+	  strcpy(OTF->w_filename,optarg);
 	  break;
 	case 'l':
 	  OTF->resolution_size = atof(optarg);
