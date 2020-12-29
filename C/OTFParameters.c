@@ -244,13 +244,11 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	case 'n':
 #if 1
 	  OTF->n_cell = atoi(optarg);        // original code
-	  printf("PJT original n_cell=%d\n",OTF->n_cell);
-	  printf("PJT and     nsample=%d\n",OTF->nsamples);	  
 #else	  
-  	  OTF->nsamples = atoi(optarg);    // PJT
-	  printf("PJT original nsample=%d\n",OTF->nsamples);
-	  printf("PJT and       n_cell=%d\n",OTF->n_cell);
+  	  OTF->nsamples = atoi(optarg);      // PJT
 #endif	  
+	  //printf("PJT  n_cell=%d\n",OTF->n_cell);
+	  //printf("PJT  nsample=%d\n",OTF->nsamples);	  
 	  break;
 	case 'm':
 	  OTF->n_subcell = atoi(optarg);
