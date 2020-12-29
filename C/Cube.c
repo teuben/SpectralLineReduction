@@ -20,14 +20,18 @@ void initialize_cube(Cube* C, int *n)
   int i;
   for(i=0;i<3;i++)
     C->n[i] = n[i];
-  C->ncube = n[0]*n[1]*n[2];
+  C->ncube  = n[0]*n[1]*n[2];
   C->nplane = n[0]*n[1];
+#if defined(MDMAXDIM)
+  C->cube = allocate_mdarray3(n[2],n[1],n[0]);  // Fortran style contiguous
+#else  
   C->cube = (float*)malloc(C->ncube*sizeof(float));
   if(C->cube == NULL)
     fprintf(stderr,"Cube: Failed to Allocate Cube\n");
   else
     for(i=0;i<C->ncube;i++)
       C->cube[i] = 0.0;
+#endif  
 }
 
 /** initialize_axis - initializes the axis data 
@@ -84,8 +88,9 @@ int cube_z_index(Cube *C, float x, float y)
   return(result);
 }
 
-/** write netcdf data cube 
+/** write netcdf data cube (actually not used, we write fits cubes)
  */
+#if !defined(MDMAXDIM)
 void write_netcdf_cube(Cube *C, char *filename)
 {
   int ncid;
@@ -219,6 +224,7 @@ void write_netcdf_cube(Cube *C, char *filename)
 	   
   nc_close(ncid);  
 }
+#endif
 
 void write_fits_cube(Cube *C, char *filename)
 {
@@ -240,6 +246,11 @@ void write_fits_cube(Cube *C, char *filename)
   naxes[2] = C->n[Z_AXIS];
 
   // create the buffer to reorder the cube to FITS standard
+  // buffer(ix,iy,iz) in fortran, or buffer[iz][iy][ix]
+#if defined(MDMAXDIM)
+  // no reordering needed if we picked the Fortran ordering
+  buffer = &C->cube[0][0][0];
+#else  
   buffer = (float*)malloc(C->ncube*sizeof(float));
 
   ic = 0;
@@ -251,7 +262,7 @@ void write_fits_cube(Cube *C, char *filename)
 	      buffer[ic] = C->cube[ii];
 	      ic++;
 	    }
-
+#endif
   // you MUST initialize status
   status = 0;
   if((retval=fits_create_file(&fptr, filename, &status)) != 0)

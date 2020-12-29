@@ -18,12 +18,16 @@ void initialize_plane(Plane* P, int *n)
   for(i=0;i<2;i++)
     P->n[i] = n[i];
   P->nplane = n[0]*n[1];
+#if defined(MDMAXDIM)
+  P->plane = allocate_mdarray2(n[1],n[0]);  // Fortran style contiguous
+#else  
   P->plane = (float*)malloc(P->nplane*sizeof(float));
   if(P->plane == NULL)
     fprintf(stderr,"Plane: Failed to Allocate Plane\n");
   else
     for(i=0;i<P->nplane;i++)
       P->plane[i] = 0.0;
+#endif  
 }
 
 /** initialize_axis - initializes the axis data 
@@ -95,6 +99,9 @@ void write_fits_plane(Plane *P, char *filename)
   naxes[1] = P->n[PLANE_Y_AXIS];
 
   // create the buffer to reorder the cube to FITS standard
+#if defined(MDMAXDIM)
+  buffer = &P->plane[0][0];
+#else  
   buffer = (float*)malloc(P->nplane*sizeof(float));
 
   ic = 0;
@@ -106,7 +113,8 @@ void write_fits_plane(Plane *P, char *filename)
 	buffer[ic] = P->plane[ii];
 	ic++;
       }
-
+#endif
+  
   // you MUST initialize status
   status = 0;
   if((retval=fits_create_file(&fptr, filename, &status)) != 0)

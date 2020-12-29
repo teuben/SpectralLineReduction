@@ -79,9 +79,9 @@ int main(int argc, char *argv[])
   //printf("5\n");
   initialize_cube(&C, n);
   // note that we add one to crpix's per fits convention
-  initialize_cube_axis(&C, Z_AXIS, S.CRVAL, S.CRPIX+1., S.CDELT, S.CTYPE, "km/s");
-  initialize_cube_axis(&C, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
-  initialize_cube_axis(&C, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
+  initialize_cube_axis(&C, Z_AXIS, S.CRVAL, S.CRPIX+1.,      S.CDELT,       S.CTYPE, "km/s");
+  initialize_cube_axis(&C, X_AXIS, 0.0,     (n[0]-1.)/2.+1., OTF.cell_size, "X",     "arcsec");
+  initialize_cube_axis(&C, Y_AXIS, 0.0,     (n[1]-1.)/2.+1., OTF.cell_size, "Y",     "arcsec");
 
   initialize_plane(&Weight, n);
   initialize_plane_axis(&Weight, PLANE_X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
@@ -137,6 +137,13 @@ int main(int argc, char *argv[])
 			      rmsweight = 1.0;
 			    }
 			    weight = get_weight(&CF, distance) * rmsweight;
+#if defined(MDMAXDIM)
+			    for(k=0;k<C.n[Z_AXIS];k++)
+			      C.cube[iz+k][iy+jj][ix+ii] += weight * spectrum[k];
+			    Weight.plane[iy+jj][ix+ii] += weight;
+			    if (ii==0 && jj==0)
+			      Mask.plane[iy+jj][ix+ii] = 1;
+#else			    
 			    iz = cube_z_index(&C, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
 			    for(k=0;k<C.n[Z_AXIS];k++)
 			      C.cube[iz+k] = C.cube[iz+k] + weight * spectrum[k];
@@ -144,6 +151,7 @@ int main(int argc, char *argv[])
 			    Weight.plane[izp] = Weight.plane[izp] + weight;
 			    if (ii==0 && jj==0)
 			      Mask.plane[izp] = 1;
+#endif			    
 			  }		    
 		    }
 		}
@@ -162,13 +170,18 @@ int main(int argc, char *argv[])
       for(j=0;j<C.n[Y_AXIS];j++)
 	{
 	  y = C.caxis[Y_AXIS][j];
+#if defined(MDMAXDIM)
+	  if(Mask.plane[j][i] > 0.0)
+	    for(k=0;k<C.n[Z_AXIS];k++)
+	      C.cube[k][j][i] /= Weight.plane[j][i];
+	  else
+	      for(k=0;k<C.n[Z_AXIS];k++)
+		C.cube[k][j][i] = NAN;
+#else	  
 	  izp = plane_index(&Weight, x, y);
 	  iz = cube_z_index(&C, x, y);
-#if 0	  
-	  if(Weight.plane[izp] > 0.0)    
-#else	    
-	  if(Mask.plane[izp] > 0.0)         //      only expose cells if it had a pixel
-#endif	    
+	  //if(Weight.plane[izp] > 0.0)     //  classic method with fuzzy edges
+	  if(Mask.plane[izp] > 0.0)         //  only expose cells if it had a pixel
 	    {
 	      for(k=0;k<C.n[Z_AXIS];k++)
 		C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
@@ -178,12 +191,16 @@ int main(int argc, char *argv[])
 	      for(k=0;k<C.n[Z_AXIS];k++)
 		C.cube[iz+k] = NAN;
 	    }
+#endif	  
 	}
     }
 
   printf("Weighting Completed\n");
 
-  // dumping the spectrum at 0,0 for fun... 
+  // dumping the spectrum at 0,0 for fun...
+#if defined(MDMAXDIM)
+  printf("TBD code for mdarray\n");
+#else  
   izp = plane_index(&Weight, 0.0, 0.0);
   printf("Weight of %f %f is %f\n",0.0,0.0,Weight.plane[izp]);
   if (Weight.plane[izp] == 0.0)
@@ -199,6 +216,7 @@ int main(int argc, char *argv[])
   for(i=0;i<S.nchan;i++)
     printf("%d %8.3f %6.2f\n ",i, C.caxis[Z_AXIS][i],C.cube[iz+i]);
 #endif
+#endif  
   
   printf("write to %s\n",OTF.o_filename);
   // finally write the data cube as FITS file

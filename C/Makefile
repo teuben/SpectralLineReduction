@@ -14,6 +14,7 @@ LIBS += -lm
 
 CC = gcc
 #CFLAGS = -O3 -std=c99 -Wall
+#CFLAGS = -O3 -DMDMAXDIM=3
 CFLAGS = -O3
 
 # an extra library (e.g. -lefence)
@@ -31,6 +32,9 @@ clean:
 install: spec_driver_fits
 	cp spec_driver_fits ../bin
 
+mdarray.o : mdarray.h mdarray.c
+	$(CC) $(CFLAGS) -c mdarray.c $(INCLUDES)
+
 Cube.o : Cube.h Cube.c
 	$(CC) $(CFLAGS) -c Cube.c $(INCLUDES)
 
@@ -46,6 +50,8 @@ ConvolveFunction.o : ConvolveFunction.h ConvolveFunction.c
 OTFParameters.o : OTFParameters.h OTFParameters.c
 	$(CC) $(CFLAGS) -c OTFParameters.c
 
-spec_driver_fits : spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o
-	$(CC) $(CFLAGS) -o spec_driver_fits spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o $(INCLUDES) $(LIBS)  $(ELIBS)
+OBJS = spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o mdarray.o
+
+spec_driver_fits : $(OBJS)
+	$(CC) $(CFLAGS) -o spec_driver_fits $(OBJS) $(INCLUDES) $(LIBS)  $(ELIBS)
 

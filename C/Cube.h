@@ -1,6 +1,10 @@
 #ifndef _CUBE_H_
 #define _CUBE_H_
 
+#if defined(MDMAXDIM)
+#include "mdarray.h"
+#endif
+
 #define X_AXIS 1
 #define Y_AXIS 0
 #define Z_AXIS 2
@@ -10,7 +14,11 @@ typedef struct
   int obsnum;
   char source[32];
   float x_position, y_position;
+#if defined(MDMAXDIM)
+  mdarray3 cube;
+#else  
   float *cube;
+#endif  
   float *caxis[3];
   float crval[3], crpix[3], cdelt[3];
   char ctype[3][16], units[3][16];
