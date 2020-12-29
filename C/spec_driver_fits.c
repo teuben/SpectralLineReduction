@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 			    weight = get_weight(&CF, distance) * rmsweight;
 #if defined(MDMAXDIM)
 			    for(k=0;k<C.n[Z_AXIS];k++)
-			      C.cube[iz+k][iy+jj][ix+ii] += weight * spectrum[k];
+			      C.cube[k][iy+jj][ix+ii] += weight * spectrum[k];
 			    Weight.plane[iy+jj][ix+ii] += weight;
 			    if (ii==0 && jj==0)
 			      Mask.plane[iy+jj][ix+ii] = 1;
