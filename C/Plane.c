@@ -110,7 +110,7 @@ void write_fits_plane(Plane *P, char *filename)
   for(j=0;j<P->n[PLANE_Y_AXIS];j++)
     for(k=0;k<P->n[PLANE_X_AXIS];k++)
       {
-	ii = i + j*P->n[PLANE_Y_AXIS] + (P->n[PLANE_X_AXIS]-k-1);
+	ii = i + j*P->n[PLANE_X_AXIS] + (P->n[PLANE_X_AXIS]-k-1);
 	buffer[ic] = P->plane[ii];
 	ic++;
       }
