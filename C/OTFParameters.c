@@ -89,7 +89,7 @@ void decode_file_list(OTFParameters *OTF, char *the_list)
     int i;
     char** tokens;
 
-    printf("file list=%s\n", the_list);
+    //printf("file list=%s\n", the_list);
 
     tokens = str_split(the_list, ',');
 
@@ -197,7 +197,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
       if(coption == -1)
 	break;
 
-      printf("%c\n",coption);
+      //printf("%c\n",coption);
       switch(coption)
 	{
 	case 'h':
