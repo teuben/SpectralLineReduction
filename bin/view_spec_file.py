@@ -24,13 +24,18 @@ def main(argv):
         SV.sequoia_rms_plot(Opts.pix_list, Opts.rms_cut, plot_range=[0.,Opts.plot_range[1]])
         SV.sequoia_rms_histogram(Opts.pix_list, Opts.rms_cut)
         SV.sequoia_mean_spectra_plot(Opts.pix_list, Opts.rms_cut)
+        SV.xy_position_plot()
+        SV.sx_position_plot()
+        SV.sy_position_plot()        
     else:
         SV.pixel_waterfall_plot(Opts.show_pixel, Opts.rms_cut, plot_range=Opts.plot_range)
         SV.pixel_rms_plot(Opts.show_pixel, Opts.rms_cut, plot_range=[0.,Opts.plot_range[1]])
         SV.pixel_rms_histogram(Opts.show_pixel, Opts.rms_cut)
         SV.pixel_mean_spectrum_plot(Opts.show_pixel, Opts.rms_cut)
-
-    SV.xy_position_plot()
+        SV.xy_position_plot(False)
+        SV.sx_position_plot(False)
+        SV.sy_position_plot(False)
+    
     pl.ioff()
     pl.show()
     
