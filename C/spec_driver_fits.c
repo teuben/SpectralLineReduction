@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
     initialize_gauss_filter(&CF, OTF.otf_jinc_b);
   else if(OTF.otf_select == 3)
     initialize_triangle_filter(&CF, OTF.resolution_size);
+  else if(OTF.otf_select == 4)
+    initialize_box_filter(&CF, OTF.resolution_size);
   else
     initialize_box_filter(&CF, OTF.cell_size/2.);
 
