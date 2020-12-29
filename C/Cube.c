@@ -24,7 +24,10 @@ void initialize_cube(Cube* C, int *n)
   C->nplane = n[0]*n[1];
   C->cube = (float*)malloc(C->ncube*sizeof(float));
   if(C->cube == NULL)
-    fprintf(stderr,"Cube: Failed to Allocate Cube\n");
+    {
+      fprintf(stderr,"Cube: Failed to Allocate Cube\n");
+      exit(1);
+    }
   else
     for(i=0;i<C->ncube;i++)
       C->cube[i] = 0.0;
@@ -49,7 +52,10 @@ void initialize_cube_axis(Cube *C, int axis, float crval, float crpix, float cde
 
   C->caxis[axis] = (float*)malloc(C->n[axis]*sizeof(float));
   if(C->caxis[axis] == NULL)
-    fprintf(stderr,"Cube: Failed to allocate axis %d\n",axis);
+    {
+      fprintf(stderr,"Cube: Failed to allocate axis %d\n",axis);
+      exit(1);
+    }
 
   for(i=0;i<C->n[axis];i++)
       C->caxis[axis][i] = (i-C->crpix[axis])*C->cdelt[axis]+C->crval[axis];
@@ -64,8 +70,13 @@ int cube_axis_index(Cube *C, int axis, float value)
   
   result_f = (value-(C->crval[axis]-C->cdelt[axis]/2.))/C->cdelt[axis] + C->crpix[axis];
   result_i = (int)floor(result_f);
+#if 1
   if((result_i<0) || (result_i>=C->n[axis]))
     result_i = -1;
+#else
+  if(result_i<0) return 0;
+  if(result_i>=C->n[axis]) return C->n[axis]-1;
+#endif
   return(result_i);
 }
 
@@ -241,7 +252,12 @@ void write_fits_cube(Cube *C, char *filename)
 
   // create the buffer to reorder the cube to FITS standard
   buffer = (float*)malloc(C->ncube*sizeof(float));
-
+  if(buffer == NULL)
+    {
+      fprintf(stderr,"write_fits_cube: Failed to allocate buffer\n");
+      exit(1);
+    }
+  
   ic = 0;
   for(i=0;i<C->n[Z_AXIS];i++)
       for(j=0;j<C->n[Y_AXIS];j++)
@@ -471,7 +487,6 @@ void write_fits_cube(Cube *C, char *filename)
   if((retval=fits_close_file(fptr, &status)) != 0)
     print_fits_error(status);
 
-  //printf("PJT all done\n");
 } 
 
 void print_fits_error(int status)
