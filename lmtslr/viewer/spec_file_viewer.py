@@ -32,6 +32,7 @@ class SpecFileViewer():
         self.caxis = nc.variables['Header.SpectrumAxis.CAXIS'][:]
 
         self.pixel = nc.variables['Data.Pixel'][:]
+        self.sequence = nc.variables['Data.Sequence'][:]
         self.xpos = nc.variables['Data.XPos'][:]
         self.ypos = nc.variables['Data.YPos'][:]
         self.rms = nc.variables['Data.RMS'][:]
@@ -135,7 +136,7 @@ class SpecFileViewer():
         pl.xlabel('Sample')
         pl.title('PIXEL: %d'%(the_pixel))
         
-    def xy_position_plot(self):
+    def xy_position_plot(self, all=True):
         """
         Makes x-y position plot.
         Args:
@@ -143,11 +144,53 @@ class SpecFileViewer():
         Returns:
             none
         """
+        s0 = 0
+        s1 = max(self.sequence)+1
+        print("Max sequence=%d" % s1)
         pl.figure()
-        pl.plot(self.xpos,self.ypos, 'k.')
+        if all:
+            pl.plot(self.xpos,self.ypos, 'k.')
+        else:
+            pl.plot(self.xpos[s0:s1],self.ypos[s0:s1], 'k.')
         pl.xlabel('X')
         pl.ylabel('Y')
 
+    def sx_position_plot(self, all=True):
+        """
+        Makes sequence-x plot.
+        Args:
+            none
+        Returns:
+            none
+        """
+        s0 = 0
+        s1 = max(self.sequence)+1
+        pl.figure()
+        if all:
+            pl.plot(self.sequence,self.xpos, 'k.')
+        else:
+            pl.plot(self.sequence[s0:s1],self.xpos[s0:s1], 'k.')
+        pl.xlabel('Sequence')
+        pl.ylabel('X')
+
+    def sy_position_plot(self, all=True):
+        """
+        Makes sequence-y position plot.
+        Args:
+            none
+        Returns:
+            none
+        """
+        s0 = 0
+        s1 = max(self.sequence)+1
+        pl.figure()
+        if all:
+            pl.plot(self.sequence,self.ypos, 'k.')
+        else:
+            pl.plot(self.sequence[s0:s1],self.ypos[s0:s1], 'k.')
+        pl.xlabel('Sequence')
+        pl.ylabel('Y')
+        
     def sequoia_rms_histogram(self, pixel_list, rms_cut, figsize=8):
         """
         Makes rms histogram of spectra from pixels in pixel_list.
@@ -215,6 +258,12 @@ class SpecFileViewer():
         Returns:
             none
         """
+        xcen = 0.0
+        ycen = 0.0
+        rad  = 10.0
+        dx = self.xpos - xcen
+        dy = self.ypos - ycen
+        r = np.sqrt(dx*dx+dy*dy)
         pl.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
         rindex = np.where(self.rms[pindex] < rms_cut)[0]
