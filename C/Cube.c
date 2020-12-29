@@ -23,7 +23,7 @@ void initialize_cube(Cube* C, int *n)
   C->ncube  = n[0]*n[1]*n[2];
   C->nplane = n[0]*n[1];
 #if defined(MDMAXDIM)
-  C->cube = allocate_mdarray3(n[2],n[1],n[0]);  // Fortran style contiguous
+  C->cube = allocate_mdarray3(n[2],n[0],n[1]);  // Fortran style contiguous
 #else  
   C->cube = (float*)malloc(C->ncube*sizeof(float));
   if(C->cube == NULL)

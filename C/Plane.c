@@ -19,7 +19,8 @@ void initialize_plane(Plane* P, int *n)
     P->n[i] = n[i];
   P->nplane = n[0]*n[1];
 #if defined(MDMAXDIM)
-  P->plane = allocate_mdarray2(n[1],n[0]);  // Fortran style contiguous
+  //P->plane = allocate_mdarray2(n[1],n[0]);  // Fortran style contiguous
+  P->plane = allocate_mdarray2(n[0],n[1]);  // Fortran style contiguous
 #else  
   P->plane = (float*)malloc(P->nplane*sizeof(float));
   if(P->plane == NULL)
