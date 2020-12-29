@@ -121,9 +121,11 @@ class SpecFile():
         nc_data.units = 'K'
 
         count = 0
-        
+# Pix Nspec  Mean Std    MAD_std Min  Max      <RMS> RMS_max    Warnings
+# 0 14373   0.009 1.645 1.617 -11.081 12.502   1.628 3.551      *M 4.0
+       
         print("Looping over pixel list %s: " % str(self.pix_list))
-        print("Pix Nspec  Mean Std MAD_std Max  <RMS> RMS_max")
+        print("Pix Nspec  Mean Std    MAD_std Min  Max      <RMS> RMS_max    Warnings")
 
         for ipix in self.pix_list:
             count0 = count
@@ -161,16 +163,21 @@ class SpecFile():
             s1 = pdata.mean()
             s2 = pdata.std()
             s3 = mad_std(pdata)
-            s4 = pdata.max()
-            s5 = prms.mean()
-            if s2/s3 > 1.2:
-                s6 = "***"
-            else:
-                s6 = ""
+            s4 = pdata.min()            
+            s5 = pdata.max()
+            s6 = prms.mean()
             s7 = prms.max()
-            print("%d %d   %.3f %.3f %.3f %.3f  %.3f %.3f  %s" %
-                  (ipix,count-count0,s1,s2,s3,s4,s5,s7,s6))
-                   
+            msg = ""
+            if s2/s3 > 1.2:  msg = msg + " *P %.1f" % (s2/s3)
+            s8 = prms.std()
+            s9 = mad_std(prms)
+            if s8/s9 > 1.2:  msg = msg + " *M %.1f" % (s8/s9)
+
+            print("%d %d   %.3f %.3f %.3f %.3f %.3f   %.3f %.3f     %s" %
+                  (ipix,count-count0,s1,s2,s3,s4,s5,s6,s7,msg))
+        print("Warnings:")
+        print("  *P ratio:      ratio of std/mad too high for data")
+        print("  *M ratio:      ratio of std/mad too high for RMS")
 
             
     def open_output_netcdf(self, output_file_name):
