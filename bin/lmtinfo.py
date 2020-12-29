@@ -33,26 +33,23 @@ else:
     sys.exit(0)
 
 
-
 nc = netCDF4.Dataset(ifproc)
 vlsr = nc.variables['Header.Source.Velocity'][0]
 src = b''.join(nc.variables['Header.Source.SourceName'][:]).decode().strip()
-
 skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
 restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
+nc.close()
 
 
+print("# <lmtinfo>")
 print('vlsr=%g' % vlsr)
 print('skyfreq=%g' % skyfreq)
 print('restfreq=%g' % restfreq)
 print('src=%s' % src)
-
-
 resolution = 1.15 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806
 print('resolution=%.2f' % resolution)
 print('cell=%.2f' % (resolution/2.0))
-
-nc.close()
+print("# </lmtinfo>")
 
 
 
