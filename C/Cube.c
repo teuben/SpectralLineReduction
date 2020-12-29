@@ -258,7 +258,7 @@ void write_fits_cube(Cube *C, char *filename)
       for(j=0;j<C->n[Y_AXIS];j++)
 	  for(k=0;k<C->n[X_AXIS];k++)
 	    {
-	      ii = i + j*C->n[Y_AXIS]*C->n[Z_AXIS] + (C->n[X_AXIS]-k-1)*C->n[Z_AXIS];
+	      ii = i + j*C->n[X_AXIS]*C->n[Z_AXIS] + (C->n[X_AXIS]-k-1)*C->n[Z_AXIS];
 	      buffer[ic] = C->cube[ii];
 	      ic++;
 	    }
