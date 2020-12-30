@@ -58,7 +58,7 @@ void rms_stats(int n, float *RMS, int *Pixel,
 	  
     }
     if (k==0) {
-      printf("Warning: no pixels found %d\n",k);
+      printf("Warning: no pixels found for pixel %d\n",i);
       RMS_cut[i] = -1.0;
       continue;
     }
