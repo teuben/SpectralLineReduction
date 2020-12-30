@@ -127,7 +127,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
   strcpy(OTF->w_filename,"");        // -w=   default is no weight file
   OTF->resolution_size    = 14.;     // -l=   would be better to use the default for 115 GHz???
   OTF->cell_size          = 7.;      // -c=
-  for(i=0;i<16;i++) 
+  for(i=0;i<MAXPIXEL;i++) 
     OTF->use_pixels[i]    = 0;       // -u=   what's the deal with or without []
   OTF->rms_cutoff         = 10.;     // -z=
   OTF->noise_sigma        = 0.0;     // -s=
