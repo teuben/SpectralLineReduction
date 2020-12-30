@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
@@ -7,7 +8,9 @@
 #include "ConvolveFunction.h"
 #include "OTFParameters.h"
 #include "SpecFile.h"
+#include "Stats.h"
 #include "Version.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -98,8 +101,16 @@ int main(int argc, char *argv[])
   free_spec_file(&S);
   printf("axes initialized\n");
 
-  for(i=0;i<16;i++)
-    printf("%d %d\n",i,OTF.use_pixels[i]);
+#if 1
+  //  @todo    this implies the pix_list applies to all input files
+  printf("pixel: ");  
+  for(i=0;i<MAXPIXEL;i++)
+    printf("%2d ",i);
+  printf("\nused?: ");  
+  for(i=0;i<MAXPIXEL;i++)
+    printf("%2d ",OTF.use_pixels[i]);
+  printf("\n");
+#endif  
 
   for(ifile=0;ifile<OTF.nfiles;ifile++)
     {
@@ -108,13 +119,17 @@ int main(int argc, char *argv[])
       read_spec_file(&S, OTF.i_filename[ifile]);
       int nout = 0;
 
+      // set the new S.RMS_cut array
+      rms_stats(S.nspec, S.RMS, S.Pixel, MAXPIXEL, OTF.use_pixels, S.RMS_cut, OTF.rms_cutoff);
+
       // now we do the gridding
       for(i=0;i<S.nspec;i++)
 	{
 	  //if (i != 10000) continue;  // PJT test
+	  
 	  if(OTF.use_pixels[S.Pixel[i]] == 1)
 	    {
-	      if(S.RMS[i] < OTF.rms_cutoff)
+	      if(S.RMS[i] < S.RMS_cut[S.Pixel[i]])
 		{
 		  ngood++;
 		  spectrum = get_spectrum(&S,i);
@@ -125,10 +140,11 @@ int main(int argc, char *argv[])
 		      for(ii=-CF.n_cells; ii<=CF.n_cells; ii++)
 			for(jj=-CF.n_cells; jj<=CF.n_cells; jj++)
 			  {
-			    if (ix+ii < 0 || iy+jj<0 || ix+ii >= C.n[X_AXIS] || iy+jj >= C.n[Y_AXIS]) {
-			      nout++;
-			      continue;
-			    }
+			    if (ix+ii < 0 || iy+jj<0 || ix+ii >= C.n[X_AXIS] || iy+jj >= C.n[Y_AXIS])
+			      {
+				nout++;
+				continue;
+			      }
 			    x = S.XPos[i]-C.caxis[X_AXIS][ix+ii];
 			    y = S.YPos[i]-C.caxis[Y_AXIS][iy+jj];
 			    distance = sqrt(x*x+y*y);

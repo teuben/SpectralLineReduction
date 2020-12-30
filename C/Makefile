@@ -46,6 +46,12 @@ ConvolveFunction.o : ConvolveFunction.h ConvolveFunction.c
 OTFParameters.o : OTFParameters.h OTFParameters.c
 	$(CC) $(CFLAGS) -c OTFParameters.c
 
-spec_driver_fits : spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o
-	$(CC) $(CFLAGS) -o spec_driver_fits spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o $(INCLUDES) $(LIBS)  $(ELIBS)
+Stats.o : Stats.h Stats.c
+	$(CC) $(CFLAGS) -c Stats.c
+
+DEPS = spec_driver_fits.c Cube.o Plane.o SpecFile.o ConvolveFunction.o OTFParameters.o Stats.o
+
+
+spec_driver_fits : $(DEPS)
+	$(CC) $(CFLAGS) -o spec_driver_fits $(DEPS)  $(INCLUDES) $(LIBS)  $(ELIBS)
 
