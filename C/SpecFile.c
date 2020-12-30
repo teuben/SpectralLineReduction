@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <netcdf.h>
 
+#include "OTFParameters.h"
 #include "SpecFile.h"
 
 int read_spec_file(SpecFile *S, char *filename)
@@ -16,14 +17,12 @@ int read_spec_file(SpecFile *S, char *filename)
   int nspec_id, nchan_id, data_id, x_id, y_id, pix_id, seq_id, rms_id;
   char version[20];
 
-  //printf("about to open file %s\n",filename);
+  printf("Opening SpecFile file %s\n",filename);
 
   /* Open the file. NC_NOWRITE tells netCDF we want read-only access
      to the file.*/
   if ((retval = nc_open(filename, NC_NOWRITE, &ncid)))
     ERR(retval);
-
-  printf("file %s opened\n",filename);
 
   /* Get the dimensions */
   if ((retval = nc_inq_dimid(ncid, "nspec", &nspec_id)))
@@ -147,7 +146,7 @@ int read_spec_file(SpecFile *S, char *filename)
   S->RMS = (float *)malloc(nspec*sizeof(float));
   S->Pixel = (int *)malloc(nspec*sizeof(int));
   S->Sequence = (int *)malloc(nspec*sizeof(int));
-  S->RMS_cut = (float *)malloc(16*sizeof(float));   // MAXPIXEL
+  S->RMS_cut = (float *)malloc(MAXPIXEL*sizeof(float));   // MAXPIXEL
 
   if ((retval = nc_get_var_float(ncid, data_id, S->theData)))
     ERR(retval);
