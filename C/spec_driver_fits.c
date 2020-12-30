@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
   initialize_plane_axis(&Mask, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
   
 
-  free_spec_file(&S);
+  //free_spec_file(&S);     keep first one open
   printf("axes initialized\n");
 
 #if 1
@@ -115,8 +115,9 @@ int main(int argc, char *argv[])
   for(ifile=0;ifile<OTF.nfiles;ifile++)
     {
       // read the new specfile for gridding
-      printf("file %d %s\n",ifile,OTF.i_filename[ifile]);
-      read_spec_file(&S, OTF.i_filename[ifile]);
+      if (ifile > 0)
+	read_spec_file(&S, OTF.i_filename[ifile]);
+
       int nout = 0;
 
       // set the new S.RMS_cut array
