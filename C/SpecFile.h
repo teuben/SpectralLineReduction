@@ -27,6 +27,7 @@ typedef struct
   // the data from the file
   float *theData;
   int *Pixel;
+  float *RMS_cut;  
   int *Sequence;
   float *XPos;
   float *YPos;

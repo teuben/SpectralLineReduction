@@ -147,6 +147,7 @@ int read_spec_file(SpecFile *S, char *filename)
   S->RMS = (float *)malloc(nspec*sizeof(float));
   S->Pixel = (int *)malloc(nspec*sizeof(int));
   S->Sequence = (int *)malloc(nspec*sizeof(int));
+  S->RMS_cut = (float *)malloc(16*sizeof(float));   // MAXPIXEL
 
   if ((retval = nc_get_var_float(ncid, data_id, S->theData)))
     ERR(retval);
@@ -176,6 +177,8 @@ int read_spec_file(SpecFile *S, char *filename)
   }
   printf("X-range: %g %g   Y-Yrange: %g %g\n",xmin,xmax,ymin,ymax);
   printf("MapSize: %g x %g arcsec\n", xmax-xmin, ymax-ymin);
+
+  
 
   /* Close the file, freeing all resources. */
   if ((retval = nc_close(ncid)))
