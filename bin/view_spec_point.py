@@ -10,6 +10,7 @@
 -p PIXEL --show_pixel PIXEL   Show a particular pixel flags code (deprecated) [Default: -1]
 -z RMS_CUT --rms_cut RMS_CUT  RMS threshold for data, negative allowed for robust MAD method  [Default: 10.0]
 --plot_range PLOT_RANGE       Plotting range (deprecated) [Default: -1,4]
+--plots METHOD                Plotting style, defaults to interactive.
 -h --help                     show this help
 
 
@@ -29,13 +30,13 @@ from docopt import docopt
 import matplotlib.pyplot as pl
 from lmtslr.utils.argparser import HandleViewSpecFileOptions
 from lmtslr.viewer.spec_file_viewer import SpecFileViewer
+from lmtslr.viewer.plots import Plots
 import lmtslr.utils.convert as acv
-
 
 def main(argv):
     av = docopt(__doc__,options_first=True, version='0.1')
     # debug:    show the dictionary
-    print(av)
+    # print(av)
 
     nc_file    = av['--input']
     pix_list   = acv.listi(av['--pix_list'],  16)
@@ -44,8 +45,9 @@ def main(argv):
     show_pixel = acv.listi(av['--show_pixel'], 1)
     rms_cut    = acv.listf(av['--rms_cut'],    1)
     plot_range = acv.listf(av['--plot_range'], 2)
-    
-    pl.ion()
+    plots      = av['--plots']
+
+    Plots.init(plots)
     
     SV = SpecFileViewer(nc_file)
 
@@ -56,9 +58,8 @@ def main(argv):
         # classic one
         SV.pixel_mean_spectrum_plot(show_pixel, rms_cut)
         SV.pixel_rms_plot(show_pixel, rms_cut, plot_range=[0.,plot_range[1]])
-        
-    pl.ioff()
-    pl.show()
+
+    Plots.show()
     
 if __name__ == '__main__':
     main(sys.argv[1:])
