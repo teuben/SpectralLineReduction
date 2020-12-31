@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as pl
 import netCDF4
+from astropy.stats import mad_std
 
 class SpecFileViewer():
     """
@@ -258,12 +259,6 @@ class SpecFileViewer():
         Returns:
             none
         """
-        xcen = 0.0
-        ycen = 0.0
-        rad  = 10.0
-        dx = self.xpos - xcen
-        dy = self.ypos - ycen
-        r = np.sqrt(dx*dx+dy*dy)
         pl.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
         rindex = np.where(self.rms[pindex] < rms_cut)[0]
@@ -271,4 +266,68 @@ class SpecFileViewer():
         pl.xlabel(self.ctype)
         pl.ylabel('TA*')
         pl.title('PIXEL: %d'%(the_pixel))
+                
+    def sequoia_mean_spectra_plot2(self, pixel_list, rms_cut, figsize=8):
+        """
+        Makes mean spectra plot of spectra from pixels in pixel_list.
+        Args:
+            pixel_list (list): list of pixel IDs to plot
+            rms_cut (float): rms cutoff value for plot
+            figsize (float): size of figure in inches (default is 8)
+        Returns:
+            none
+        """
+        fig4, ax4 = pl.subplots(4, 4, sharex='col', sharey='row', 
+            gridspec_kw={'hspace': 0, 'wspace': 0}, figsize=(figsize,figsize))
+        fig4.text(0.5, -0.1, self.ctype, ha='center')
+        for the_pixel in pixel_list:
+            pindex = np.where(self.pixel == the_pixel)[0]
+            rindex = np.where(self.rms[pindex] < rms_cut)[0]
+            ax4[np.mod(the_pixel, 4), the_pixel // 4].plot(self.caxis, 
+                np.mean(self.data[pindex[rindex]], axis=0))
+ 
+    def pixel_mean_spectrum_plot2(self, pixel_list, rms_cut, location, radius):
+        """
+        Makes mean spectra plot of spectra from pixel the_pixel.
+        Args:
+            the_pixel (int): pixel ID to plot
+            rms_cut (float): rms cutoff value for plot
+            location (list of 2 floats):   location in grid
+            radius (float); radius of circle within which points selected
+            figsize (float): size of figure in inches (default is 8)
+        Returns:
+            none
+        """
+
+        if radius > 0:
+            dx = self.xpos - location[0]
+            dy = self.ypos - location[1]
+            r2 = dx*dx+dy*dy
+            rad2 = radius*radius
+
+        pl.figure()
+
+        for the_pixel in pixel_list:
+            pindex = np.where(self.pixel == the_pixel)[0]
+
+            print("Warning: MAD test",pindex)
+            med1 = np.median(self.rms[pindex])
+            std1 = mad_std(self.rms[pindex])
+            if rms_cut  < 0:
+                cut1 = med1 - rms_cut*std1
+            else:
+                cut1 = rms_cut
+            print("MAD:",med1,std1,cut1)
+        
+            rindex = np.where(self.rms[pindex] < cut1)[0]
+            if radius > 0:
+                cindex = np.where(r2[rindex] < rad2)[0]
+                print('Pixel %d %d' % (the_pixel, len(cindex)))
+                pl.plot(self.caxis, np.mean(self.data[pindex[rindex[cindex]]], axis=0))
+            else:
+                print('Pixel %d %d' % (the_pixel, len(rindex)))
+                pl.plot(self.caxis, np.mean(self.data[pindex[rindex]], axis=0))
+        pl.xlabel(self.ctype)
+        pl.ylabel('TA*')
+        pl.title('PIXEL: %s   rms_cut: %g'%(str(pixel_list),cut1))
                 
