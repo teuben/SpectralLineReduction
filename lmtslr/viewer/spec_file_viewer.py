@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 import netCDF4
 from astropy.stats import mad_std
+from lmtslr.viewer.plots import Plots
 
 class SpecFileViewer():
     """
@@ -304,7 +305,7 @@ class SpecFileViewer():
             r2 = dx*dx+dy*dy
             rad2 = radius*radius
 
-        pl.figure()
+        Plots.figure()
 
         for the_pixel in pixel_list:
             pindex = np.where(self.pixel == the_pixel)[0]
@@ -330,4 +331,6 @@ class SpecFileViewer():
         pl.ylabel('TA*')
         pl.title('PIXEL: %s   rms_cut: %g'%(str(pixel_list),cut1))
         pl.legend()
+        
+        Plots.savefig()
                 
