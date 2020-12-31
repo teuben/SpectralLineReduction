@@ -26,6 +26,7 @@ Usage:
 
 """
 
+import os
 import matplotlib.pyplot as pl
 
 _plnum = 0
@@ -56,17 +57,25 @@ class Plots(object):
         support a comma separated string ?
 
         """
-        global _plnum, _plint, _plnam
+        global _plnum, _plint, _plnam, _plext
+        _plnum = 0
+        _plint = 1
+        
         if method == None:
             print("SLR Plots in interactive mode")
         else:
-            print("SLR Plots initialized with %s" % str(method))
-        _plnum = 0
-        _plint = 1
-        if method != None:     # batch mode, it needs to be a string   @todo
-            _plint = 0
-            _plnam = method
-            
+            m = method.split(',')
+            print("SLR Plots initialized with %d method=%s" % (len(m),str(method)))
+            if len(m) > 0:
+                _plnam = m[0]
+            if len(m) > 1:
+                _plext = m[1]
+            if len(m) > 2:
+                _plnum = int(m[2])-1
+            if len(m) > 3:
+                print("Warning: unsupprted options passed to method: %s" % str(m[3:]))
+            _plint = 0                
+                
     @staticmethod
     def debug():
         print("current plot number = %d" % _plnum)
@@ -79,7 +88,7 @@ class Plots(object):
     def figure():
         global _plnum
         _plnum = _plnum + 1
-        print("New Figure %d" % _plnum)
+        # print("New Figure %d" % _plnum)
         if _plint:
             pl.ion()
         pl.figure(_plnum)
@@ -99,7 +108,10 @@ class Plots(object):
         if name == None:
             fmt = _plfmt % _plnum
             plname = "%s%s.%s" % (_plnam,fmt,_plext)
-        print("Plots saving in %s" % plname)
+        if os.path.exists(plname):
+            print("Plots saving in %s (overwriting the old one)" % plname)            
+        else:
+            print("Plots saving in %s" % plname)
         pl.savefig(plname)
 
 
