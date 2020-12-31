@@ -1,3 +1,7 @@
+31-dec-2020
+  - view_spec_point.py with the new --plots interface to control batch/interactive
+  - view_spec_point.py also used the new docopt commandline parsing
+  - slowly moving rms_cut to allowing negative value for MAD style 
 29-dec-2020
   - more stats reporting for each pixel
   - Added a -w option to get a weight (.wt.fits) map out
