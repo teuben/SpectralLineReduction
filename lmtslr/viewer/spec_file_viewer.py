@@ -288,13 +288,12 @@ class SpecFileViewer():
  
     def pixel_mean_spectrum_plot2(self, pixel_list, rms_cut, location, radius):
         """
-        Makes mean spectra plot of spectra from pixel the_pixel.
+        Overplots mean spectra plot of spectra from a pixel_list
         Args:
-            the_pixel (int): pixel ID to plot
-            rms_cut (float): rms cutoff value for plot
+            pixel_list (list of int): pixel IDs to plot
+            rms_cut (float): rms cutoff value for plot (negative allowed)
             location (list of 2 floats):   location in grid
             radius (float); radius of circle within which points selected
-            figsize (float): size of figure in inches (default is 8)
         Returns:
             none
         """
@@ -321,13 +320,14 @@ class SpecFileViewer():
         
             rindex = np.where(self.rms[pindex] < cut1)[0]
             if radius > 0:
-                cindex = np.where(r2[rindex] < rad2)[0]
+                cindex = np.where(r2[pindex[rindex]] < rad2)[0]
                 print('Pixel %d %d' % (the_pixel, len(cindex)))
-                pl.plot(self.caxis, np.mean(self.data[pindex[rindex[cindex]]], axis=0))
+                pl.plot(self.caxis, np.mean(self.data[pindex[rindex[cindex]]], axis=0), label="%d" % the_pixel)
             else:
                 print('Pixel %d %d' % (the_pixel, len(rindex)))
-                pl.plot(self.caxis, np.mean(self.data[pindex[rindex]], axis=0))
+                pl.plot(self.caxis, np.mean(self.data[pindex[rindex]], axis=0), label="%d" % the_pixel)
         pl.xlabel(self.ctype)
         pl.ylabel('TA*')
         pl.title('PIXEL: %s   rms_cut: %g'%(str(pixel_list),cut1))
+        pl.legend()
                 
