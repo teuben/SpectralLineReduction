@@ -15,5 +15,5 @@ setup(
                'bin/process_otf_map.py', 'bin/process_otf_map2.py',
                'bin/process_ps.py', 'bin/view_cube.py',
                'bin/lmtinfo.py',
-               'bin/view_spec_file.py']
+               'bin/view_spec_file.py',  'bin/view_spec_point.py']
     )
