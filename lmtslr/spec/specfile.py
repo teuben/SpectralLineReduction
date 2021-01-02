@@ -39,6 +39,7 @@ class SpecFile():
         
     def velocity_slice(self):
         # make a dummy spectrum to count the channels after processing steps
+        # also reports the vellocity range in the data
         LD = LineData(self.ifproc, self.specbank.bank, self.specbank.nchan,
                       self.specbank.bandwidth, np.zeros(self.specbank.nchan))
         if len(self.vslice) == 2:
@@ -47,6 +48,9 @@ class SpecFile():
         else:
             self.nchan_to_save = self.specbank.nchan
             self.L = LD.vslice(-10000, 10000) # extreme limits to include whole spectrum
+        vmin = self.specbank.c2v(self.specbank.nchan-1)
+        vmax = self.specbank.c2v(0)
+        print("Spectral Band velocity range: %g - %g" % (vmin,vmax))
             
     def _create_nc_dimensions(self):
         # count the total number of spectra that will be processed and written to file
@@ -121,8 +125,6 @@ class SpecFile():
         nc_data.units = 'K'
 
         count = 0
-# Pix Nspec  Mean Std    MAD_std Min  Max      <RMS> RMS_max    Warnings
-# 0 14373   0.009 1.645 1.617 -11.081 12.502   1.628 3.551      *M 4.0
        
         print("Looping over pixel list %s: " % str(self.pix_list))
         print("Pix Nspec  Mean Std    MAD_std Min  Max      <RMS> RMS_max    Warnings")
