@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
   OTFParameters OTF;
 
   float *spectrum;
-  int ifile;
+  int ifile, totspec=0;
   int i,j,k;
   int ii,jj;
   int ix,iy,iz,ixp,iyp,izp;
@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
       // read the new specfile for gridding
       if (ifile > 0)
 	read_spec_file(&S, OTF.i_filename[ifile]);
+      totspec +=  S.nspec;
 
       int nout = 0;
 
@@ -169,10 +170,10 @@ int main(int argc, char *argv[])
 	    }
 	}
       free_spec_file(&S);
-      printf("Found %d points outside convolving array size +/-%d\n",nout,CF.n_cells);
+      // printf("Found %d points outside convolving array size +/-%d\n",nout,CF.n_cells);
     }
 
-  printf("Cube Completed, %d spectra accepted\n",ngood);
+  printf("Cube Completed, %d/%d Spectra accepted = %.3f\n",ngood,totspec,(float)ngood/(float)totspec);
 
   // compute averages for each map point; if no data assign NAN
   for(i=0;i<C.n[X_AXIS];i++)
@@ -184,7 +185,7 @@ int main(int argc, char *argv[])
 	  izp = plane_index(&Weight, x, y);
 	  iz = cube_z_index(&C, x, y);
 #if 0	  
-	  if(Weight.plane[izp] > 0.0)    
+	  if(Weight.plane[izp] > 0.0)       //      accept any cells with convolved signal
 #else	    
 	  if(Mask.plane[izp] > 0.0)         //      only expose cells if it had a pixel
 #endif	    
