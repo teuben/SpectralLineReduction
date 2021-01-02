@@ -17,7 +17,7 @@ from astropy.stats import mad_std
 
 class SpecFile():
     def __init__(self, ifproc, specbank, pix_list):
-        self.version = "23-dec-2020"
+        self.version = "23-dec-2020"     # modify this if anything in the output SpecFile has been changed
         self.ifproc = ifproc
         self.specbank = specbank
         self.pix_list = pix_list
@@ -39,6 +39,7 @@ class SpecFile():
         
     def velocity_slice(self):
         # make a dummy spectrum to count the channels after processing steps
+        # also reports the vellocity range in the data
         LD = LineData(self.ifproc, self.specbank.bank, self.specbank.nchan,
                       self.specbank.bandwidth, np.zeros(self.specbank.nchan))
         if len(self.vslice) == 2:
@@ -47,6 +48,9 @@ class SpecFile():
         else:
             self.nchan_to_save = self.specbank.nchan
             self.L = LD.vslice(-10000, 10000) # extreme limits to include whole spectrum
+        vmin = self.specbank.c2v(self.specbank.nchan-1)
+        vmax = self.specbank.c2v(0)
+        print("Spectral Band velocity range: %g  %g km/s" % (vmin,vmax))
             
     def _create_nc_dimensions(self):
         # count the total number of spectra that will be processed and written to file
@@ -121,8 +125,6 @@ class SpecFile():
         nc_data.units = 'K'
 
         count = 0
-# Pix Nspec  Mean Std    MAD_std Min  Max      <RMS> RMS_max    Warnings
-# 0 14373   0.009 1.645 1.617 -11.081 12.502   1.628 3.551      *M 4.0
        
         print("Looping over pixel list %s: " % str(self.pix_list))
         print("Pix Nspec  Mean Std    MAD_std Min  Max      <RMS> RMS_max    Warnings")
@@ -178,7 +180,25 @@ class SpecFile():
         print("Warnings:")
         print("  *P ratio:      ratio of std/mad too high for data")
         print("  *M ratio:      ratio of std/mad too high for RMS")
-
+        if False:
+            # @todo can't do this, why netcdf, why?
+            xmin = nc_x.min()
+            xmax = nc_x.max()
+            ymin = nc_y.min()
+            ymax = nc_y.max()
+        else:
+            xd = np.zeros(count)
+            yd = np.zeros(count)
+            for i in range(count):
+                xd[i] = nc_x[i]
+                yd[i] = nc_y[i]
+            xmin = xd.min()
+            xmax = xd.max()
+            ymin = yd.min()
+            ymax = yd.max()
+        print("X-range: %g %g   Y-range: %g %g arcsec\n" %(xmin, xmax, ymin, ymax))
+                  
+            
             
     def open_output_netcdf(self, output_file_name):
         if os.path.exists(output_file_name):

@@ -174,7 +174,7 @@ int read_spec_file(SpecFile *S, char *filename)
     if (S->YPos[i] < ymin) ymin = S->YPos[i];
     if (S->YPos[i] > ymax) ymax = S->YPos[i];
   }
-  printf("X-range: %g %g   Y-Yrange: %g %g\n",xmin,xmax,ymin,ymax);
+  printf("X-range: %g %g   Y-range: %g %g arcsec\n",xmin,xmax,ymin,ymax);
   printf("MapSize: %g x %g arcsec\n", xmax-xmin, ymax-ymin);
 
   

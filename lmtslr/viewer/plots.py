@@ -1,22 +1,25 @@
 """
-Module for maintaining plotting status. This is an easier way to
-flip the code between interactive and batch mode.   in LMTSLR
-all routines that follow this should initialize via the --plots
-argument option
+Module for maintaining plotting status, and making it easier to flip
+the code between interactive and batch mode.  In LMTSLR all routines
+that follow this should initialize with Plots.init(METHOD), with the
+METHOD is a string obtained via the --plots=METHOD command line option.
 
 
 Command usage:
    view_xxx.py  -i M51_91112.nc --plots=M51_91112
-and advanced (NYI)
-   view_xxx.py  -i M51_91112.nc --plots=M51_91112,pdf,10
+will create M51_91112.1.png (and .2. etc.)
+and advanced example
+   view_xxx.py  -i M51_91112.nc --plots=M51_91112,pdf,5
+will create M51_91112.5.pdf (and .6. etc.)
 
 
-Usage:
-   import lmtslr.viewer.Plots as Plots
+Module Usage:
+   import lmtslr.viewer.plots as Plots
+   import matplotlib.pyplot as pl
 
-       old                new
-    --------------        -----------------------------------------
-    pl.ion()              Plots.init() -or- Plots.init("M51_91112") 
+    old habits            new style
+    --------------        ------------------------------------------------
+    pl.ion()              Plots.init()     -or-    Plots.init("M51_91112") 
     pl.figure(1)          pl.figure()
                           Plots.savefig()
     pl.figure(2)          pl.figure()
@@ -56,6 +59,8 @@ class Plots(object):
         
         support a comma separated string ?
 
+        @todo   no figure(size=) support here yet
+
         """
         global _plnum, _plint, _plnam, _plext
         _plnum = 0
@@ -78,6 +83,8 @@ class Plots(object):
                 
     @staticmethod
     def debug():
+        """ show internal status
+        """
         print("current plot number = %d" % _plnum)
         print("current plot name   = %s" % _plnam)
         print("current interactive = %d" % _plint)
@@ -86,6 +93,8 @@ class Plots(object):
 
     @staticmethod
     def figure():
+        """ simple replacement for matplotlib.pyplot.figure()
+        """
         global _plnum
         _plnum = _plnum + 1
         # print("New Figure %d" % _plnum)
@@ -95,6 +104,8 @@ class Plots(object):
     
     @staticmethod
     def show():
+        """ simple replacement for matplotlib.pyplot.show()
+        """
         global _plint
         if _plint:
             pl.ioff()
@@ -102,6 +113,11 @@ class Plots(object):
 
     @staticmethod
     def savefig(name=None):
+        """ simple replacement for matplotlib.pyplot.figure()
+            Normally it inherits namea and extension how
+            Plots.init() was called, but with name= you
+            can make an excption here.
+        """
         global _plint, _plnum, _plnam, _plext
         if _plint == 1:
             return
