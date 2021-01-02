@@ -196,7 +196,7 @@ class SpecFile():
             xmax = xd.max()
             ymin = yd.min()
             ymax = yd.max()
-        print("X-range: %g %g   Y-range: %g %g arcsec (%d)\n" %(xmin, xmax, ymin, ymax))
+        print("X-range: %g %g   Y-range: %g %g arcsec\n" %(xmin, xmax, ymin, ymax))
                   
             
             
