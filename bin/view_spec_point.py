@@ -43,7 +43,7 @@ from lmtslr.viewer.plots import Plots
 import lmtslr.utils.convert as acv
 
 def main(argv):
-    av = docopt(__doc__,options_first=True, version='0.2')
+    av = docopt(__doc__,options_first=True, version='0.3')
 
     nc_file    = av['--input']
     pix_list   = acv.listi(av['--pix_list'],  16)
