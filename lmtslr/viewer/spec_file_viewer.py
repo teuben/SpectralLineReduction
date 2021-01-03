@@ -364,6 +364,15 @@ class SpecFileViewer():
         Returns:
             none
         """
+        def rebin(arr, new_shape):
+            """Rebin 3D array arr to shape new_shape by averaging."""
+            print("PJT",arr.shape)
+            shape = (new_shape[0], arr.shape[0] // new_shape[0],
+                     new_shape[1], arr.shape[1] // new_shape[1],
+                     new_shape[2], arr.shape[2] // new_shape[2])
+                     
+            return arr.reshape(shape).mean(-1).mean(1)
+
 
         npix  =  len(pixel_list)
         nchan =  len(self.caxis)
@@ -371,6 +380,8 @@ class SpecFileViewer():
         nsamp = 0
         for (i,the_pixel) in zip(range(npix),pixel_list):
             pindex = np.where(self.pixel == the_pixel)[0]
+            if len(pindex)==0:
+                print("Warning: no data for pixel %d" % the_pixel)
             if nsamp == 0:
                 nsamp = len(pindex)
             elif len(pindex) < nsamp:
@@ -380,7 +391,7 @@ class SpecFileViewer():
         print('NSAMP',nsamp)
 
         sp    = np.zeros(npix*nchan*nsamp).reshape(npix,nsamp*nchan)
-        print("FITS file will be %d x %d x %d" % (nchan,npix,nsamp))
+        print("FITS file will be %d x %d x %d" % (nsamp//binning, nchan,npix))
 
         for (i,the_pixel) in zip(range(npix),pixel_list):
             pindex = np.where(self.pixel == the_pixel)[0]
@@ -391,6 +402,11 @@ class SpecFileViewer():
         # an expensive operation: swapping last two axes
         sp = sp.reshape(npix,nsamp,nchan)
         sp = np.moveaxis(sp,1,2)
+
+        if binning > 1:
+            sp = rebin(sp,(npix,nchan,nsamp//binning))
+            sp = sp.squeeze()
+            print("New shape:",sp.shape)
 
         hdu = fits.PrimaryHDU(sp)
         hdu.writeto(fits_file)

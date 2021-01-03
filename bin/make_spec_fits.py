@@ -6,6 +6,7 @@
 -i INPUT --input INPUT        Input SpecFile (no default)
 -o OUTPUT --output OUTPUT     Output FITS file (no default)
 --pix_list PIX_LIST           Comma separated list of pixels [Default: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+--binning BINNING             Binning applied in the SIMPLE (time) dimension [Default: 1]
 -h --help                     show this help
 
 
@@ -27,10 +28,11 @@ def main(argv):
     nc_file    = av['--input']
     fits_file  = av['--output']
     pix_list   = acv.listi(av['--pix_list'],  16)
+    binning    = acv.listi(av['--binning'],  1)
 
     SV = SpecFileViewer(nc_file)
 
-    SV.write_fits(pix_list, fits_file)
+    SV.write_fits(pix_list, fits_file, binning)
     
 if __name__ == '__main__':
     main(sys.argv[1:])
