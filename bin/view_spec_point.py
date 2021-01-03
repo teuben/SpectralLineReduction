@@ -8,6 +8,8 @@
 --location X,Y                Location [Default: 0,0]
 -r RAD --radius RAD           Radius around location in arcsec. Use < 0 for all spectra. [Default: -1] 
 -z RMS_CUT --rms_cut RMS_CUT  RMS threshold for data, negative allowed for robust MAD method  [Default: 10.0]
+--mean                        Show the mean spectrum as well.
+--diff                        Show the difference from the mean instead of the spectrum
 --plot_range PLOT_RANGE       Plotting range (deprecated) [Default: -1,4]
 -p PIXEL --show_pixel PIXEL   Show a particular pixel flags code (deprecated) [Default: -1]
 --plots METHOD                Plotting method for batch, defaults to interactive.
@@ -51,6 +53,8 @@ def main(argv):
     show_pixel = acv.listi(av['--show_pixel'], 1)   # deprecating
     plot_range = acv.listf(av['--plot_range'], 2)   # deprecating
     plots      = av['--plots']
+    use_mean   = av['--mean']
+    use_diff   = av['--diff']
 
     Plots.init(plots)
     
@@ -58,7 +62,7 @@ def main(argv):
 
     if show_pixel < 0:
         # new routine
-        SV.pixel_mean_spectrum_plot2(pix_list, rms_cut, location, radius)
+        SV.pixel_mean_spectrum_plot2(pix_list, rms_cut, location, radius, use_mean, use_diff)
     else:
         # classic one
         SV.pixel_mean_spectrum_plot(show_pixel, rms_cut)

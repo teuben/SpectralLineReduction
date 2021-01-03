@@ -287,7 +287,7 @@ class SpecFileViewer():
             ax4[np.mod(the_pixel, 4), the_pixel // 4].plot(self.caxis, 
                 np.mean(self.data[pindex[rindex]], axis=0))
  
-    def pixel_mean_spectrum_plot2(self, pixel_list, rms_cut, location, radius):
+    def pixel_mean_spectrum_plot2(self, pixel_list, rms_cut, location, radius, use_mean=False, use_diff=False):
         """
         Overplots mean spectra plot of spectra from a pixel_list
         Args:
@@ -307,7 +307,11 @@ class SpecFileViewer():
 
         Plots.figure()
 
-        for the_pixel in pixel_list:
+        npix  =  len(pixel_list)
+        nchan =  len(self.caxis)
+        sp    = np.zeros(npix*nchan).reshape(npix,nchan)
+
+        for (i,the_pixel) in zip(range(npix),pixel_list):
             pindex = np.where(self.pixel == the_pixel)[0]
 
             print("Warning: MAD test",pindex)
@@ -323,10 +327,21 @@ class SpecFileViewer():
             if radius > 0:
                 cindex = np.where(r2[pindex[rindex]] < rad2)[0]
                 print('Pixel %d %d' % (the_pixel, len(cindex)))
-                pl.plot(self.caxis, np.mean(self.data[pindex[rindex[cindex]]], axis=0), label="%d" % the_pixel)
+                sp[i,:] = np.mean(self.data[pindex[rindex[cindex]]], axis=0)
+                #pl.plot(self.caxis, sp_i, label="%d" % the_pixel)
             else:
                 print('Pixel %d %d' % (the_pixel, len(rindex)))
-                pl.plot(self.caxis, np.mean(self.data[pindex[rindex]], axis=0), label="%d" % the_pixel)
+                sp[i,:] = np.mean(self.data[pindex[rindex]], axis=0)
+                #pl.plot(self.caxis, sp_i, label="%d" % the_pixel)
+        sp_mean = np.mean(sp, axis=0)
+        for (i,the_pixel) in zip(range(npix),pixel_list):
+            if use_diff:
+                pl.plot(self.caxis, sp[i,:]-sp_mean, label="%d" % the_pixel)
+            else:
+                pl.plot(self.caxis, sp[i,:], label="%d" % the_pixel)            
+        if use_mean:
+            pl.plot(self.caxis,sp_mean,label="M", color='black', linewidth=3)
+        
         pl.xlabel(self.ctype)
         pl.ylabel('TA*')
         pl.title('PIXEL: %s   rms_cut: %g'%(str(pixel_list),cut1))
