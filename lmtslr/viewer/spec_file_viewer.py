@@ -2,11 +2,12 @@ import numpy as np
 import matplotlib.pyplot as pl
 import netCDF4
 from astropy.stats import mad_std
+from astropy.io import fits
 from lmtslr.viewer.plots import Plots
 
 class SpecFileViewer():
     """
-    Class for viewing spectrum files.
+    Class for viewing spectrum files and conversion to a waterfall 
     """
     def __init__(self, netcdf_filename):
         """
@@ -349,3 +350,51 @@ class SpecFileViewer():
         
         Plots.savefig()
                 
+    def write_fits(self, pixel_list, fits_file, binning=1):
+        """
+        Write selected pixels in a waterfall fits cube, each
+        pixel is a different plane.
+        Along X is the sample (time)
+        Along Y in the channel
+        Along Z is the pixel
+        Args:
+            pixel_list (list of int): pixel IDs to plot
+            fits_file (string):
+            binning (int):  binning along sample, not implemented
+        Returns:
+            none
+        """
+
+        npix  =  len(pixel_list)
+        nchan =  len(self.caxis)
+
+        nsamp = 0
+        for (i,the_pixel) in zip(range(npix),pixel_list):
+            pindex = np.where(self.pixel == the_pixel)[0]
+            if nsamp == 0:
+                nsamp = len(pindex)
+            elif len(pindex) < nsamp:
+                nsamp = len(pindex)
+
+        print('pix',pixel_list)
+        print('NSAMP',nsamp)
+
+        sp    = np.zeros(npix*nchan*nsamp).reshape(npix,nsamp*nchan)
+        print("FITS file will be %d x %d x %d" % (nchan,npix,nsamp))
+
+        for (i,the_pixel) in zip(range(npix),pixel_list):
+            pindex = np.where(self.pixel == the_pixel)[0]
+            if len(pindex) > nsamp:
+                pindex = pindex[:nsamp]
+            sp[i,:] = self.data[pindex].ravel()
+            
+        # an expensive operation: swapping last two axes
+        sp = sp.reshape(npix,nsamp,nchan)
+        sp = np.moveaxis(sp,1,2)
+
+        hdu = fits.PrimaryHDU(sp)
+        hdu.writeto(fits_file)
+
+
+
+            
