@@ -366,13 +366,10 @@ class SpecFileViewer():
         """
         def rebin(arr, new_shape):
             """Rebin 3D array arr to shape new_shape by averaging."""
-            print("PJT",arr.shape)
             shape = (new_shape[0], arr.shape[0] // new_shape[0],
                      new_shape[1], arr.shape[1] // new_shape[1],
                      new_shape[2], arr.shape[2] // new_shape[2])
-                     
-            return arr.reshape(shape).mean(-1).mean(1)
-
+            return arr.reshape(shape).mean(-1).mean(-2).mean(-3)
 
         npix  =  len(pixel_list)
         nchan =  len(self.caxis)
@@ -388,29 +385,41 @@ class SpecFileViewer():
                 nsamp = len(pindex)
 
         print('pix',pixel_list)
-        print('NSAMP',nsamp)
+        print('Min nsamp',nsamp)
+        print('Binning',binning)
 
-        sp    = np.zeros(npix*nchan*nsamp).reshape(npix,nsamp*nchan)
-        print("FITS file will be %d x %d x %d" % (nsamp//binning, nchan,npix))
+        nsamp1 = (nsamp//binning[0])*binning[0]
+        nchan1 = (nchan//binning[1])*binning[1]
+
+        #print("OLD: ",nsamp, nchan)
+        #print("NEW: ",nsamp1,nchan1)
+
+        sp    = np.zeros(npix*nchan1*nsamp1).reshape(npix,nsamp1*nchan1)
+        print("FITS file will be %d x %d x %d" % (nsamp//binning[0], nchan1//binning[1],npix))
 
         for (i,the_pixel) in zip(range(npix),pixel_list):
             pindex = np.where(self.pixel == the_pixel)[0]
-            if len(pindex) > nsamp:
-                pindex = pindex[:nsamp]
-            sp[i,:] = self.data[pindex].ravel()
-            
+            if len(pindex) > nsamp1:
+                pindex = pindex[:nsamp1]
+            if nchan == nchan1:
+                sp[i,:] = self.data[pindex].ravel()
+            else:
+                x = self.data[pindex]
+                x = x[:nsamp1,:nchan1]
+                sp[i,:] = x.ravel()
+                
         # an expensive operation: swapping last two axes
-        sp = sp.reshape(npix,nsamp,nchan)
+        sp = sp.reshape(npix,nsamp1,nchan1)
         sp = np.moveaxis(sp,1,2)
 
-        if binning > 1:
-            sp = rebin(sp,(npix,nchan,nsamp//binning))
+        if binning[0]*binning[1] > 1:
+            sp = rebin(sp,(npix,nchan1//binning[1],nsamp1//binning[0]))
             sp = sp.squeeze()
             print("New shape:",sp.shape)
 
         hdu = fits.PrimaryHDU(sp)
         hdu.writeto(fits_file)
-
+        print("Written waterfall cube to %s" % fits_file)
 
 
             
