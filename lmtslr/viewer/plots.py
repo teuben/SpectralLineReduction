@@ -14,7 +14,7 @@ will create M51_91112.5.pdf (and .6. etc.)
 
 
 Module Usage:
-   import lmtslr.viewer.plots as Plots
+   from lmtslr.viewer.plots import Plots
    import matplotlib.pyplot as pl
 
     old habits            new style
