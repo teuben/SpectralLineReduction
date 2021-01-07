@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
   int n[3];
 
   printf("%s %s\n", argv[0], LMTSLR_VERSION);
+  if (argc == 1) exit(0);
 
   //printf("1\n");
   // initialize
