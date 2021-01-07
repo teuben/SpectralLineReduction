@@ -75,11 +75,16 @@ def summary(ifproc, rc=False):
     else:    
         print("%s %s  %-20s %g %g %g" % (fn[1], fn[2], src, restfreq, vlsr, dt))
 
+
+#  although we grab the command line arguments here, they are actually not
+#  used in the way most scripts use them. Below there is a more hardcoded
+#  parsing of arguments based on how many there are, which are files, and
+#  which are directories.
 arguments = docopt(__doc__,options_first=True, version='0.1')
 #print(arguments)
 
 if len(sys.argv) == 2:
-                                                     # mode 1: obsnum or nc_file
+                                                     # mode 1: obsnum or nc_file or path
     obsnum = sys.argv[1]
     fn = glob.glob('*/ifproc/ifproc*%s*.nc' % obsnum)
     if len(fn) > 0:
