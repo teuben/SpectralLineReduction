@@ -47,7 +47,7 @@ def summary(ifproc, rc=False):
     if rc:
         print('# <lmtinfo>')
         print('# ifproc="%s"' % ifproc)
-        print('# time=%g sec' % dt)
+        print('# inttime=%g sec' % dt)
         print('vlsr=%g' % vlsr)
         print('skyfreq=%g' % skyfreq)
         print('restfreq=%g' % restfreq)
