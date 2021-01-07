@@ -14,6 +14,22 @@ Usage: lmtinfo.py OBSNUM
 -h --help  This help
 
 
+This routine grabs some useful summary information from the ifproc file, ignoring
+the roach files. If one unique OBSNUM is given, it will show this information
+in a "rc" style for the pipeline. If more OBSNUM are possible, for example by only
+giving a PATH, all possible OBSNUMs are listed with a short summary, one OBSNUM
+per line. Example of output:
+
+      #     DATE  OBSNUM   SOURCE     RESTFRQ VLSR INTTIME
+      2018-11-16  079447  IRC+10216   115.271  -20       8
+      2018-11-16  079448  IRC+10216   115.271  -20     686
+      2020-02-18  090910  NGC5194     115.271  463       7
+      2020-02-18  090911  NGC5194     115.271  463    3986
+      2020-02-20  091111  NGC5194     115.271  463       7
+      2020-02-20  091112  NGC5194     115.271  463    6940
+
+
+
 """
 
 import sys
