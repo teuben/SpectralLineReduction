@@ -77,6 +77,8 @@ if len(sys.argv) == 2:
         for f in fn:
             summary(f)
         sys.exit(0)
+    elif os.path.exists(ifproc):
+        summary(ifproc,rc=True)
                
 elif len(sys.argv) == 3:
                                                      # mode 2: path and obsnum
