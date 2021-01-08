@@ -33,6 +33,7 @@ per line. Example of output:
 """
 
 import sys
+import math
 import numpy as np		
 import matplotlib.pyplot as pl
 
@@ -68,9 +69,9 @@ def summary(ifproc, rc=False):
         print('skyfreq=%g' % skyfreq)
         print('restfreq=%g' % restfreq)
         print('src="%s"' % src)
-        resolution = 1.15 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806
-        print('resolution=%.2f' % resolution)
-        print('cell=%.2f' % (resolution/2.0))
+        resolution = math.ceil(1.0 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806)
+        print('resolution=%g' % resolution)
+        print('cell=%g' % (resolution/2.0))
         print("# </lmtinfo>")
     else:    
         print("%s %s  %-20s %g %g %g" % (fn[1], fn[2], src, restfreq, vlsr, dt))
