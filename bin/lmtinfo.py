@@ -36,6 +36,7 @@ import sys
 import math
 import numpy as np		
 import matplotlib.pyplot as pl
+import datetime
 
 import sys, os
 import glob
@@ -56,6 +57,11 @@ def summary(ifproc, rc=False):
     skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
     restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
     bbtime = nc.variables['Data.IfProc.BasebandTime']
+
+    date_obs = nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
+    date_obs = datetime.datetime.fromtimestamp(date_obs).strftime('%Y-%m-%dT%H:%M:%S')
+    
+    
     t0 = float(bbtime[0].data)
     t1 = float(bbtime[-1].data)
     dt = t1-t0
@@ -64,6 +70,7 @@ def summary(ifproc, rc=False):
     if rc:
         print('# <lmtinfo>')
         print('# ifproc="%s"' % ifproc)
+        print('# date-obs="%s"' % date_obs)
         print('# inttime=%g sec' % dt)
         print('vlsr=%g' % vlsr)
         print('skyfreq=%g' % skyfreq)
@@ -74,7 +81,7 @@ def summary(ifproc, rc=False):
         print('cell=%g' % (resolution/2.0))
         print("# </lmtinfo>")
     else:    
-        print("%s %s  %-20s %g %g %g" % (fn[1], fn[2], src, restfreq, vlsr, dt))
+        print("%s %s %s  %-20s %g %g %g" % (date_obs, fn[2], src, restfreq, vlsr, dt))
 
 
 #  although we grab the command line arguments here, they are actually not
