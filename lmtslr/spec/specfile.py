@@ -6,18 +6,20 @@ author: GN
 date: Feb 2020
 """
 
+import os
+import sys
+import numpy as np
 import netCDF4
-import os,sys
+from astropy.stats import mad_std
+
 from lmtslr.spec.spec import SpecBankData
 from lmtslr.reduction.line_reduction import LineData, NetCDFLineHeader
 from lmtslr.utils.reader import count_otf_spectra
 from lmtslr.grid.grid import Grid 
-import numpy as np
-from astropy.stats import mad_std
 
 class SpecFile():
     def __init__(self, ifproc, specbank, pix_list):
-        self.version = "23-dec-2020"     # modify this if anything in the output SpecFile has been changed
+        self.version = "10-jan-2021"     # modify this if anything in the output SpecFile has been changed
         self.ifproc = ifproc
         self.specbank = specbank
         self.pix_list = pix_list
@@ -26,6 +28,10 @@ class SpecFile():
         self.b_order = 0
         self.b_regions, self.l_regions = [], []
         self.eliminate_list = []
+
+    def set_history(self, history):
+        self.history = history
+        
         
     def set_line_parameters(self, vslice=[], b_order=0,
                             b_regions=[], l_regions=[],
@@ -65,11 +71,19 @@ class SpecFile():
         # just doing 20 characters in string
         nc_dimension_nlabel = self.ncout.createDimension('nlabel', 20)
 
+        # history is long... why is netcdf so irrationally complicated to handle strings
+        nc_dimension_nhist = self.ncout.createDimension('nhist', 512)
+
     def _create_nc_header(self):
         # a version header
         nc_version = self.ncout.createVariable('Header.Version', 'c', ('nlabel',))
-        #nc_version[0:len(self.version)] = self.version[0:len(self.version)]
         nc_version[0:len(self.version)] = self.version
+        print("LEN",len(self.version))
+        print("LEN",len(self.history))
+
+        # history how the SpecFile was created
+        nc_history = self.ncout.createVariable('Header.History', 'c', ('nhist',))
+        nc_history[0:len(self.history)] = self.history
         
         # the Observation Header
         nc_obsnum = self.ncout.createVariable('Header.Obs.ObsNum', 'i4')
