@@ -22,6 +22,8 @@ typedef struct
   float zsource;
   char date_obs[20];
   float resolution_size;
+  char history1[512];
+  char history2[512];
 } Cube;
 
 void initialize_cube(Cube* C, int *n);

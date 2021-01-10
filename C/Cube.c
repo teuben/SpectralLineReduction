@@ -479,6 +479,20 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
+  strcpy(comment,"Convert RAW to SpecFile");
+  if((retval=fits_write_key_longstr(fptr, "HISTORY", C->history1, comment, &status)) != 0)
+    {
+      printf("HISTORY1\n");
+      print_fits_error(status);
+    }
+  strcpy(comment,"Convert SpecFile to FITS");
+  if((retval=fits_write_key_longstr(fptr, "HISTORY", C->history2, comment, &status)) != 0)
+    {
+      printf("HISTORY2\n");
+      print_fits_error(status);
+    }
+  
+
   // write the data cube
   if((retval=fits_write_img(fptr, TFLOAT, 1, C->ncube, buffer, &status)) != 0)
     print_fits_error(status);

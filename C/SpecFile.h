@@ -32,7 +32,8 @@ typedef struct
   float *XPos;
   float *YPos;
   float *RMS;
-  double *Date;  // not used yet
+  double *Date;        // not used yet
+  char history[512];   // cmdline how the specfile was made ( > 10-jan-2021)
 } SpecFile;
   
 
