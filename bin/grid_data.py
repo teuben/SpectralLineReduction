@@ -41,9 +41,13 @@ the controversial one.  A value of 4 is suggested
 # Python Imports	
 import numpy as np		
 import matplotlib.pyplot as pl
-from docopt import docopt
 import subprocess		 
-import netCDF4			 
+import netCDF4
+
+# command line parsing
+from docopt import docopt
+import lmtslr.utils.convert as acv
+
 
 # Line Data Reduction Imports
 from lmtslr.spec.spec import *
@@ -53,8 +57,6 @@ from lmtslr.reduction.line_reduction import *
 
 #from lmtslr.utils.parser import HandleGridOptions
 from lmtslr.utils.argparser import HandleGridOptions
-import lmtslr.utils.convert as acv
-
 
 
 def main(argv):
