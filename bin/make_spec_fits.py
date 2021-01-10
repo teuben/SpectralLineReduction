@@ -6,7 +6,7 @@
 -i INPUT --input INPUT        Input SpecFile (no default)
 -o OUTPUT --output OUTPUT     Output FITS file (no default)
 --pix_list PIX_LIST           Comma separated list of pixels [Default: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
---binning BINNING             Binning applied in the TIME,CHAN dimension [Default: 1,1]
+--binning BINT,BINC           Binning applied in the TIME,CHAN dimension [Default: 1,1]
 -h --help                     show this help
 
 
