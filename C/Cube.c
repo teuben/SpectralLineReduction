@@ -449,6 +449,9 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
+  strcpy(comment,"VLSR, VSOURCE and ZSOURCE need to be properly looked at ");
+  fits_write_comment(fptr, comment, &status);
+
   strcpy(comment, "Header.LineData.VSource");
   if((retval=fits_update_key(fptr, TFLOAT,  "VLSR", &C->vlsr, comment, &status)) != 0)
     {
