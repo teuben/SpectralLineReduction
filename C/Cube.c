@@ -306,7 +306,7 @@ void write_fits_cube(Cube *C, char *filename)
       printf("ORIGIN\n");
       print_fits_error(status);
     }
-  strcpy(comment,"LMT observing number");  
+  strcpy(comment,"LMT observing number (if list, first one)");  
   obsnum = (long)C->obsnum;
   if((retval=fits_update_key(fptr, TLONG,   "OBSNUM  ", &obsnum, comment, &status)) != 0)
     {
@@ -480,18 +480,12 @@ void write_fits_cube(Cube *C, char *filename)
     }
 
   strcpy(comment,"Convert RAW to SpecFile");
-  if((retval=fits_write_key_longstr(fptr, "HISTORY", C->history1, comment, &status)) != 0)
-    {
-      printf("HISTORY1\n");
-      print_fits_error(status);
-    }
+  fits_write_comment(fptr, comment, &status);
+  fits_write_history(fptr, C->history1, &status);
+
   strcpy(comment,"Convert SpecFile to FITS");
-  if((retval=fits_write_key_longstr(fptr, "HISTORY", C->history2, comment, &status)) != 0)
-    {
-      printf("HISTORY2\n");
-      print_fits_error(status);
-    }
-  
+  fits_write_comment(fptr, comment, &status);
+  fits_write_history(fptr, C->history2, &status);
 
   // write the data cube
   if((retval=fits_write_img(fptr, TFLOAT, 1, C->ncube, buffer, &status)) != 0)
