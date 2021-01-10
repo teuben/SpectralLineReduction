@@ -11,8 +11,10 @@
 --use_cal                          Use Calibration scan
 --tsys TSYS                        If use_cal is False, value of Tsys to use [default: 250.0] ** not used **
 --use_otf_cal                      Use calibration within OTF scan (default: False)
---stype STYPE                      type of spectral line reduction; 0 - median; 1 - single ref spectra; 2 - bracketed ref [Default: 2]
---x_axis X_AXIS                    select spectral x axis. options one of VLSR, VSKY, VBARY, VSRC, FLSR, FSKY, FBARY, FSRC [default: VLSR]
+--stype STYPE                      type of spectral line reduction;
+                                   0 - median; 1 - single ref spectra; 2 - bracketed ref [Default: 2]
+--x_axis X_AXIS                    select spectral x axis.
+                                   options one of VLSR, VSKY, VBARY, VSRC, FLSR, FSKY, FBARY, FSRC [default: VLSR]
 --b_order B_ORDER                  set polynomial baseline order [default: 0]
 --b_regions B_REGIONS              enter list of lists for baseline regions (default: [[],[]])
 --l_regions L_REGIONS              enter list of lists for line fit regions (default: [[],[]])
@@ -20,17 +22,19 @@
 --sample PIXEL,S0,S1               Series of sample sections per pixel to be removed from SpecFile (not implemented yet)
 --restfreq RESTFREQ                Override the rest frequency. Not used yet, but useful for multi-line slices.
 
--h --help                     show this help
+-h --help                          show this help
 
 Creates a SpecFile from a single OTF mapping observation
 
-Not a few options are still listed here, but don't seem to be doing anything,
-as underlying code has changed.
+Not a few options are still listed here, but don't seem to be doing
+anything, as underlying code has changed.
 
-We also list the --sample keyword, which is a proposed way to cull time-based sections of a selected pixel. Use with care, as
-the sample counter is based on the original RAW ON data. Note that the max number of samples can differ per pixel due to their
-connection to the roach board.
- 
+We also list the --sample keyword, which is a proposed way to cull
+time-based sections of a selected pixel. Use with care, as the sample
+counter is based on the original RAW ON data. Note that the max number
+of samples can differ per pixel due to their connection to the roach
+board.
+
 """
 
 # Python Imports	
@@ -64,8 +68,12 @@ def main(argv):
     av = docopt(__doc__,options_first=True, version='0.1')
     print(av)   # debug
     # vslice = acv.listf(av['--slice'], 2)
-    
-    
+
+    # set the command line for HISTORY in SpecFile and beyond
+    history = sys.argv[0].split('/')[-1]
+    for arg in sys.argv[1:]:
+        history = history + " " + arg
+        
     #print(time.time(), time.clock())
     Opts = HandleOTFProcessOptions()
     Opts.parse_options(argv, 'process_otf_map', 1, True)
@@ -85,6 +93,7 @@ def main(argv):
                            path=Opts.data_path)
 
     specfile = SpecFile(I, S, Opts.pix_list)
+    specfile.set_history(history)
     specfile.set_line_parameters(vslice=[Opts.slice[0], Opts.slice[1]],
                                  b_order=Opts.b_order,
                                  b_regions=Opts.b_regions,
