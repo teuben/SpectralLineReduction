@@ -138,51 +138,54 @@ int main(int argc, char *argv[])
       // set the new S.RMS_cut array
       rms_stats(S.nspec, S.RMS, S.Pixel, MAXPIXEL, OTF.use_pixels, S.RMS_cut, OTF.rms_cutoff);
 
+      // set the mask array which spectra will be passed on:
+      // 1. rms needs to be good (old)
+      // 2. pixel needs to be part (old)
+      // 3. sample needs to be part (new)
+      // set_spec_mask(&S, &OTF);
+      for (i=0; i<S.nspec; i++) {
+	if(OTF.use_pixels[S.Pixel[i]] == 0)  S.use[i] = 0;
+	if(S.RMS[i] > S.RMS_cut[S.Pixel[i]]) S.use[i] = 0;
+      }
+
       // now we do the gridding
-      for(i=0;i<S.nspec;i++)
-	{
-	  //if (i != 10000) continue;  // PJT test
-	  
-	  if(OTF.use_pixels[S.Pixel[i]] == 1)
+      for(i=0;i<S.nspec;i++) {
+	if(S.use[i]) {
+	  ngood++;
+	  spectrum = get_spectrum(&S,i);
+	  ix = cube_axis_index(&C, X_AXIS, S.XPos[i]);
+	  iy = cube_axis_index(&C, Y_AXIS, S.YPos[i]);
+	  if( (ix>=0) && (iy>=0) )
 	    {
-	      if(S.RMS[i] < S.RMS_cut[S.Pixel[i]])
-		{
-		  ngood++;
-		  spectrum = get_spectrum(&S,i);
-		  ix = cube_axis_index(&C, X_AXIS, S.XPos[i]);
-		  iy = cube_axis_index(&C, Y_AXIS, S.YPos[i]);
-		  if( (ix>=0) && (iy>=0) )
-		    {
-		      for(ii=-CF.n_cells; ii<=CF.n_cells; ii++)
-			for(jj=-CF.n_cells; jj<=CF.n_cells; jj++)
-			  {
-			    if (ix+ii < 0 || iy+jj<0 || ix+ii >= C.n[X_AXIS] || iy+jj >= C.n[Y_AXIS])
-			      {
-				nout++;
-				continue;
-			      }
-			    x = S.XPos[i]-C.caxis[X_AXIS][ix+ii];
-			    y = S.YPos[i]-C.caxis[Y_AXIS][iy+jj];
-			    distance = sqrt(x*x+y*y);
-			    // @todo what if S.RMS[i] == 0.0
-			    if ((S.RMS[i] != 0.0) && (OTF.noise_sigma > 0.0)) {
-			      rmsweight = 1.0 /(S.RMS[i] * S.RMS[i]);
-			    } else {
-			      rmsweight = 1.0;
-			    }
-			    weight = get_weight(&CF, distance) * rmsweight;
-			    iz = cube_z_index(&C, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
-			    for(k=0;k<C.n[Z_AXIS];k++)
-			      C.cube[iz+k] = C.cube[iz+k] + weight * spectrum[k];
-			    izp = plane_index(&Weight, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
-			    Weight.plane[izp] = Weight.plane[izp] + weight;
-			    if (ii==0 && jj==0)
-			      Mask.plane[izp] = 1;
-			  }		    
+	      for(ii=-CF.n_cells; ii<=CF.n_cells; ii++)
+		for(jj=-CF.n_cells; jj<=CF.n_cells; jj++)
+		  {
+		    if (ix+ii < 0 || iy+jj<0 || ix+ii >= C.n[X_AXIS] || iy+jj >= C.n[Y_AXIS])
+		      {
+			nout++;
+			continue;
+		      }
+		    x = S.XPos[i]-C.caxis[X_AXIS][ix+ii];
+		    y = S.YPos[i]-C.caxis[Y_AXIS][iy+jj];
+		    distance = sqrt(x*x+y*y);
+		    // @todo what if S.RMS[i] == 0.0
+		    if ((S.RMS[i] != 0.0) && (OTF.noise_sigma > 0.0)) {
+		      rmsweight = 1.0 /(S.RMS[i] * S.RMS[i]);
+		    } else {
+		      rmsweight = 1.0;
 		    }
-		}
+		    weight = get_weight(&CF, distance) * rmsweight;
+		    iz = cube_z_index(&C, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
+		    for(k=0;k<C.n[Z_AXIS];k++)
+		      C.cube[iz+k] = C.cube[iz+k] + weight * spectrum[k];
+		    izp = plane_index(&Weight, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
+		    Weight.plane[izp] = Weight.plane[izp] + weight;
+		    if (ii==0 && jj==0)
+		      Mask.plane[izp] = 1;
+		  }		    
 	    }
-	}
+	} // S.use
+      } // i
       free_spec_file(&S);
       // printf("Found %d points outside convolving array size +/-%d\n",nout,CF.n_cells);
     }

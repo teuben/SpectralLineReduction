@@ -1,9 +1,10 @@
 #ifndef _OTF_PARAMETERS_H_
 #define _OTF_PARAMETERS_H_
 
-#define OTF_FILE_NAME_LENGTH 200
-#define N_INPUT_FILES 2000
-#define MAXPIXEL 16
+#define OTF_FILE_NAME_LENGTH  200
+#define N_INPUT_FILES        2000
+#define MAXPIXEL               16
+#define MAXSEGMENT            512
 typedef struct
 {
   // also set via command line options
@@ -32,6 +33,8 @@ typedef struct
   // derived in code
   int nx_samples, ny_samples;
   int use_pixels[MAXPIXEL];
+  int nsegment;
+  int samples[3*MAXSEGMENT];  // triples of (pixel,sample0,sample1)
 } OTFParameters;
 
 void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[]);

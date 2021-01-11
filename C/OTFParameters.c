@@ -59,11 +59,15 @@ void decode_pix_list(OTFParameters *OTF, char *the_list)
     char p[40];
     char** tokens;
 
-    //printf("pix_list=%s\n\n", the_list);
-
     len = strlen(the_list);
-    strncpy(p,&the_list[1],len-2);
-    p[len-1] = '\0';
+
+    printf("PJT pix_list=%s\n\n", the_list);
+
+    if (the_list[0] == '[') {
+      strncpy(p,&the_list[1],len-2);
+      p[len-1] = '\0';
+    } else
+      strncpy(p,&the_list[0],len);
     tokens = str_split(p, ',');
 
     if (tokens)
@@ -78,11 +82,53 @@ void decode_pix_list(OTFParameters *OTF, char *the_list)
 	// printf("\n");
         free(tokens);
     }
-    /*
     for(i=0;i<16;i++)
 	printf("pixel %d use_it %d\n",i,OTF->use_pixels[i]);
-    */
 }
+
+void decode_sample_list(OTFParameters *OTF, char *the_list)
+{
+    int id,i,len,nsam;
+    char p[40];
+    char** tokens;
+    
+    len = strlen(the_list);
+    
+    printf("sample_list=%s\n\n", the_list);
+    
+    if (the_list[0] == '[') {
+      strncpy(p,&the_list[1],len-2);
+      p[len-1] = '\0';
+    } else
+      strncpy(p,&the_list[0],len);
+    tokens = str_split(p, ',');
+    nsam = 0;
+    
+
+    if (tokens)
+    {
+        for (i = 0; *(tokens + i); i++)
+        {
+            id = atoi(*(tokens + i));
+            OTF->samples[nsam] = id;
+	    nsam++;
+            free(*(tokens + i));
+        }
+        free(tokens);
+    }
+    if (nsam%3 == 0)
+      OTF->nsegment = nsam/3;
+    else {
+      OTF->nsegment = 0;
+      printf("Warning: sample list is not a multiple of 3\n");
+    }
+#if 1    
+    printf("nsamples=%d\n",nsam);
+    for (i=0; i<nsam/3; i++)
+      printf("Pixel %2d :  Masking %d - %d\n",OTF->samples[3*i], OTF->samples[3*i+1], OTF->samples[3*i+2]);
+#endif    
+}
+
 
 void decode_file_list(OTFParameters *OTF, char *the_list)
 {
@@ -172,7 +218,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  {"pix_list",         required_argument, 0, 'u'},  // --pix_list 
 	  {"rms_cutoff",       required_argument, 0, 'z'},  // --rms_cut
 	  {"noise_sigma",      required_argument, 0, 's'},  // --noise_sigma
-	  {"x_extent",         required_argument, 0, 'x'},  //  --x_extent
+	  {"x_extent",         required_argument, 0, 'x'},  // --x_extent
 	  {"y_extent",         required_argument, 0, 'y'},  // --y_extent
 	  {"filter",           required_argument, 0, 'f'},  // --otf_select
 	  {"rmax",             required_argument, 0, 'r'},  // --rmax
@@ -180,6 +226,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  {"jinc_a",           required_argument, 0, '0'},  // --otf_a
 	  {"jinc_b",           required_argument, 0, '1'},  // --otf_b
 	  {"jinc_c",           required_argument, 0, '2'},  // --otf_c
+	  {"sample",           optional_argument, 0, 'b'},  // --sample
 
 	  {"n_subcell",        required_argument, 0, 'm'},   // not passed
 	  {"sample_step",      required_argument, 0, 'p'},   // not passed
@@ -191,7 +238,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
       
       int option_index=0;
       //const char *optstring = "hi:o:bjl:z:c:n:f:m:s:r:0:1:2:x:y:p:q:u:";   // original w/ -b,-j
-      static const char *optstring = "i:o:w:l:c:u:z:s:x:y:f:r:n:0:1:2:m:p:q:h";
+      static const char *optstring = "i:o:w:l:c:u:z:s:x:y:f:r:n:0:1:2:b:m:p:q:h";
       coption = getopt_long(argc, argv, optstring, long_options,&option_index);
       
       if(coption == -1)
@@ -222,6 +269,9 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  break;
 	case 'u':
 	  decode_pix_list(OTF,optarg);
+	  break;
+	case 'b':
+	  decode_sample_list(OTF,optarg);
 	  break;
 	case 'z':
 	  OTF->rms_cutoff = atof(optarg);

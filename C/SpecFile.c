@@ -152,6 +152,7 @@ int read_spec_file(SpecFile *S, char *filename)
   S->Pixel = (int *)malloc(nspec*sizeof(int));
   S->Sequence = (int *)malloc(nspec*sizeof(int));
   S->RMS_cut = (float *)malloc(MAXPIXEL*sizeof(float));   // MAXPIXEL
+  S->use = (int *)malloc(nspec*sizeof(int));
 
   if ((retval = nc_get_var_float(ncid, data_id, S->theData)))
     ERR(retval);
@@ -165,6 +166,9 @@ int read_spec_file(SpecFile *S, char *filename)
     ERR(retval);
   if ((retval = nc_get_var_int(ncid, seq_id, S->Sequence)))
     ERR(retval);
+
+  for (i=0; i<nspec; i++)
+    S->use[i] = 1;
 
   // compute and report on the extreme positions the array has seen
 
@@ -181,8 +185,6 @@ int read_spec_file(SpecFile *S, char *filename)
   }
   printf("X-range: %g %g   Y-range: %g %g arcsec\n",xmin,xmax,ymin,ymax);
   printf("MapSize: %g x %g arcsec\n", xmax-xmin, ymax-ymin);
-
-  
 
   /* Close the file, freeing all resources. */
   if ((retval = nc_close(ncid)))

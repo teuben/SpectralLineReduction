@@ -29,6 +29,7 @@ typedef struct
   int *Pixel;
   float *RMS_cut;  
   int *Sequence;
+  int *use;
   float *XPos;
   float *YPos;
   float *RMS;
