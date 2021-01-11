@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   int i,j,k;
   int ii,jj;
   int ix,iy,iz,ixp,iyp,izp;
+  int p0, s0, s1, seq;
   int ngood=0;
   float x,y,X,Y,distance,weight,rmsweight;
   int n[3];
@@ -139,13 +140,28 @@ int main(int argc, char *argv[])
       rms_stats(S.nspec, S.RMS, S.Pixel, MAXPIXEL, OTF.use_pixels, S.RMS_cut, OTF.rms_cutoff);
 
       // set the mask array which spectra will be passed on:
-      // 1. rms needs to be good (old)
-      // 2. pixel needs to be part (old)
-      // 3. sample needs to be part (new)
+      //   1. rms needs to be good (old)
+      //   2. pixel needs to be part (old)
+      //   3. sample needs to be part (new)
       // set_spec_mask(&S, &OTF);
       for (i=0; i<S.nspec; i++) {
 	if(OTF.use_pixels[S.Pixel[i]] == 0)  S.use[i] = 0;
 	if(S.RMS[i] > S.RMS_cut[S.Pixel[i]]) S.use[i] = 0;
+      }
+      for (j=0; j<MAXPIXEL; j++) {
+	if(!OTF.use_pixels[j]) continue;
+	seq = 0;
+	for (i=0; i<S.nspec; i++) {
+	  if (S.Pixel[i] != j) continue;
+	  for (k=0; k<OTF.nsegment; k++) {
+	    p0 = OTF.samples[3*k];
+	    if (p0 != j) continue;
+	    s0 = OTF.samples[3*k+1];
+	    s1 = OTF.samples[3*k+2];
+	    if (seq >= s0 && seq <= s1) S.use[i] = 0;
+	  }
+	  seq++;
+	}
       }
 
       // now we do the gridding
