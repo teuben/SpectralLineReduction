@@ -48,8 +48,9 @@ int main(int argc, char *argv[])
   read_spec_file(&S, OTF.i_filename[0]);
   //printf("3\n");
   // copy over obs header variables
-  C.obsnum = S.obsnum;
-  printf("%d\n",C.obsnum);
+  C.nobsnum = 1;
+  C.obsnum[0] = S.obsnum;
+  printf("%d\n",C.obsnum[0]);
   //printf("%s\n",S.source);
   strncpy(C.source,S.source,18);  // @todo 18, seriously?   - there's 20, 32 and now 18?
   printf("%s\n",C.source);
@@ -124,8 +125,12 @@ int main(int argc, char *argv[])
   for(ifile=0;ifile<OTF.nfiles;ifile++)
     {
       // read the new specfile for gridding
-      if (ifile > 0)
+      if (ifile > 0) {
 	read_spec_file(&S, OTF.i_filename[ifile]);
+	C.obsnum[C.nobsnum] = S.obsnum;
+	C.nobsnum += 1;
+      }
+	
       totspec +=  S.nspec;
 
       int nout = 0;

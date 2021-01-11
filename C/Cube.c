@@ -179,7 +179,7 @@ void write_netcdf_cube(Cube *C, char *filename)
   if((retval = nc_enddef(ncid)) != NC_NOERR)
     ERR(retval);
 
-  if((retval = nc_put_var_int(ncid, varid_obsnum, &C->obsnum)) != NC_NOERR)
+  if((retval = nc_put_var_int(ncid, varid_obsnum, &C->obsnum[0])) != NC_NOERR)
     ERR(retval);
   if((retval = nc_put_var(ncid, varid_source, C->source)) != NC_NOERR)
     ERR(retval);
@@ -236,7 +236,7 @@ void write_fits_cube(Cube *C, char *filename)
   int i,j,k,ii,ic;
   int retval, status;
   int naxis;
-  long naxes[3], obsnum;
+  long naxes[3]; // obsnum;
   float equinox;
   char radesys[20];
   float *buffer;
@@ -289,6 +289,7 @@ void write_fits_cube(Cube *C, char *filename)
       printf("INSTRUME\n");
       print_fits_error(status);
     }
+  // OBSERVER
   if((retval=fits_update_key(fptr, TSTRING, "OBJECT  ", C->source, " ", &status)) != 0)
     {
       printf("OBJECT\n");
@@ -300,17 +301,10 @@ void write_fits_cube(Cube *C, char *filename)
       printf("DATE-OBS\n");
       print_fits_error(status);
     }
-  strcpy(comment,"Software version");
+  strcpy(comment,"LMTSLR Software version");
   if((retval=fits_update_key(fptr, TSTRING, "ORIGIN  ", LMTSLR_VERSION, comment, &status)) != 0)
     {
       printf("ORIGIN\n");
-      print_fits_error(status);
-    }
-  strcpy(comment,"LMT observing number (if list, first one)");  
-  obsnum = (long)C->obsnum;
-  if((retval=fits_update_key(fptr, TLONG,   "OBSNUM  ", &obsnum, comment, &status)) != 0)
-    {
-      printf("OBSNUM\n");
       print_fits_error(status);
     }
 
@@ -333,7 +327,8 @@ void write_fits_cube(Cube *C, char *filename)
       printf("CTYPE1 %s\n",ctype);
       print_fits_error(status);
     }
-  if((retval=fits_update_key(fptr, TFLOAT,  "CRVAL1  ", &crval, cunit, &status)) != 0)
+  strcpy(comment,"deg Header.Obs.XPosition");
+  if((retval=fits_update_key(fptr, TFLOAT,  "CRVAL1  ", &crval, comment, &status)) != 0)
     {
       printf("CRVAL1 %f\n",crval);
       print_fits_error(status);
@@ -364,7 +359,8 @@ void write_fits_cube(Cube *C, char *filename)
       printf("CTYPE2 %s\n",ctype);
       print_fits_error(status);
     }
-  if((retval=fits_update_key(fptr, TFLOAT,  "CRVAL2  ", &crval, cunit, &status)) != 0)
+  strcpy(comment,"deg Header.Obs.YPosition");  
+  if((retval=fits_update_key(fptr, TFLOAT,  "CRVAL2  ", &crval, comment, &status)) != 0)
     {
       printf("CRVAL2 %f\n",crval);
       print_fits_error(status);
@@ -385,7 +381,8 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
-  strcpy(ctype,"VELO-LSR");          // nominal projection  
+  // MIRIAD says the VELO is an AIPS convention
+  strcpy(ctype,"VELO-LSR");          // nominal projection  (CASA wants VRAD)
   crval = C->crval[Z_AXIS]*1000.;    // m/s
   cdelt = C->cdelt[Z_AXIS]*1000.;    // m/s
   crpix = C->crpix[Z_AXIS];
@@ -480,6 +477,14 @@ void write_fits_cube(Cube *C, char *filename)
     {
       printf("SPECSYS %s\n", cunit);
       print_fits_error(status);
+    }
+
+  strcpy(comment,"LMT observing numbers in this data: (Header.Obs.ObsNum)");
+  fits_write_comment(fptr, comment, &status);
+  for (i=0; i<C->nobsnum; i++)
+    {
+      sprintf(comment,"OBSNUM %d", C->obsnum[i]);   // or should this be %06d
+      fits_write_comment(fptr, comment, &status);
     }
 
   strcpy(comment,"Convert RAW to SpecFile");
