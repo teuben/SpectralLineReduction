@@ -87,6 +87,9 @@ int main(int argc, char *argv[])
     printf("%5.2f %8.4f\n",i*CF.delta, CF.array[i]);
 #endif
 
+  if (OTF.beam) 
+    make_spec_beam(&S);
+
   // initialize cube and axes
   n[0] = 2 * (int)(floor((OTF.x_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
   n[1] = 2 * (int)(floor((OTF.y_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
@@ -121,7 +124,7 @@ int main(int argc, char *argv[])
   for(i=0;i<MAXPIXEL;i++)
     printf("%2d ",OTF.use_pixels[i]);
   printf("\n");
-#endif  
+#endif
 
   for(ifile=0;ifile<OTF.nfiles;ifile++)
     {
@@ -217,20 +220,16 @@ int main(int argc, char *argv[])
 	  y = C.caxis[Y_AXIS][j];
 	  izp = plane_index(&Weight, x, y);
 	  iz = cube_z_index(&C, x, y);
-#if 0	  
-	  if(Weight.plane[izp] > 0.0)       //      accept any cells with convolved signal
-#else	    
-	  if(Mask.plane[izp] > 0.0)         //      only expose cells if it had a pixel
-#endif	    
-	    {
-	      for(k=0;k<C.n[Z_AXIS];k++)
-		C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
-	    }
+	  
+	  if(OTF.beam && Weight.plane[izp] > 0.0)
+	    for(k=0;k<C.n[Z_AXIS];k++)
+	      C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
+	  else if(Mask.plane[izp] > 0.0)     
+	    for(k=0;k<C.n[Z_AXIS];k++)
+	      C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
 	  else
-	    {
-	      for(k=0;k<C.n[Z_AXIS];k++)
-		C.cube[iz+k] = NAN;
-	    }
+	    for(k=0;k<C.n[Z_AXIS];k++)
+	      C.cube[iz+k] = NAN;
 	}
     }
 

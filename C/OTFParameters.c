@@ -197,6 +197,8 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 
   OTF->sample_step        = 1.0;     // -p   ???     Xstep 
   OTF->scan_step          = 6.65;    // -q   ???     Ystep
+
+  OTF->beam               = 0;       // 
  
   // parse command line arguments
   opterr = 0;
@@ -227,6 +229,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  {"jinc_b",           required_argument, 0, '1'},  // --otf_b
 	  {"jinc_c",           required_argument, 0, '2'},  // --otf_c
 	  {"sample",           optional_argument, 0, 'b'},  // --sample
+	  {"beam",             optional_argument, 0, 'a'},  // --beam
 
 	  {"n_subcell",        required_argument, 0, 'm'},   // not passed
 	  {"sample_step",      required_argument, 0, 'p'},   // not passed
@@ -238,7 +241,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
       
       int option_index=0;
       //const char *optstring = "hi:o:bjl:z:c:n:f:m:s:r:0:1:2:x:y:p:q:u:";   // original w/ -b,-j
-      static const char *optstring = "i:o:w:l:c:u:z:s:x:y:f:r:n:0:1:2:b:m:p:q:h";
+      static const char *optstring = "i:o:w:l:c:u:z:s:x:y:f:r:n:0:1:2:b:w:ap:q:h";
       coption = getopt_long(argc, argv, optstring, long_options,&option_index);
       
       if(coption == -1)
@@ -317,6 +320,9 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  break;
 	case 'q':
 	  OTF->scan_step = atof(optarg);
+	  break;
+        case 'a':
+	  OTF->beam = 1;
 	  break;
 	default:
 	  printf("Command Line Argument Problem for %c\n",coption);

@@ -21,6 +21,8 @@ typedef struct
   float rmax;
   int nsamples;
   float otf_jinc_a, otf_jinc_b, otf_jinc_c;
+  int beam;
+  
 
   // fixed in code
   int n_cell;

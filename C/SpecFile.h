@@ -39,6 +39,7 @@ typedef struct
   
 
 int read_spec_file(SpecFile *S, char *filename);
+void make_spec_beam(SpecFile *S);
 void free_spec_file(SpecFile *S);
 float *get_spectrum(SpecFile *S, int i);
 
