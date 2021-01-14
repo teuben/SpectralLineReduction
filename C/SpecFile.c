@@ -194,16 +194,13 @@ int read_spec_file(SpecFile *S, char *filename)
 
 void make_spec_beam(SpecFile *S)
 {
-  int i;
-
   printf("Making a SpecFile beam\n");
   S->nspec = 1;
   S->nchan = 1;
   S->XPos[0] = 0.0;
   S->YPos[0] = 0.0;
-  S->theData[i] = 1.0;  
-  //for (i=0; i<S->nchan; i++)
-  //S->theData[i] = 1.0;
+  S->RMS[0] = 1.0;
+  S->theData[0] = 1.0;  
 }
 
 
