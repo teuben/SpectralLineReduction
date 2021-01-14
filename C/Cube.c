@@ -58,7 +58,9 @@ void initialize_cube_axis(Cube *C, int axis, float crval, float crpix, float cde
     }
 
   for(i=0;i<C->n[axis];i++)
-      C->caxis[axis][i] = (i-C->crpix[axis])*C->cdelt[axis]+C->crval[axis];
+      C->caxis[axis][i] = (i+1-C->crpix[axis])*C->cdelt[axis]+C->crval[axis];
+  
+  printf("C-AXIS %d starts at %g\n",axis,  C->caxis[axis][0]);
 }
 
 /** axis_index - finds the index in an axis array given a value
@@ -67,17 +69,13 @@ int cube_axis_index(Cube *C, int axis, float value)
 {
   float result_f;
   int result_i;
-  
-  result_f = (value-(C->crval[axis]-C->cdelt[axis]/2.))/C->cdelt[axis] + C->crpix[axis];
+
+  result_f = (value - C->crval[axis])/C->cdelt[axis] + C->crpix[axis] - 0.5;
   result_i = (int)floor(result_f);
-#if 1
-  if((result_i<0) || (result_i>=C->n[axis]))
-    result_i = -1;
-#else
-  if(result_i<0) return 0;
-  if(result_i>=C->n[axis]) return C->n[axis]-1;
-#endif
-  return(result_i);
+  
+  if((result_i<0) || (result_i>=C->n[axis])) return -1;
+
+  return result_i;
 }
 
 /** cube_z_index - finds the index of the first element of z array in cube
@@ -92,7 +90,7 @@ int cube_z_index(Cube *C, float x, float y)
   iy = cube_axis_index(C, Y_AXIS, y);
 
   result = iy*C->n[X_AXIS]*C->n[Z_AXIS] + ix*C->n[Z_AXIS];
-  return(result);
+  return result;
 }
 
 /** write netcdf data cube 
@@ -514,5 +512,4 @@ void print_fits_error(int status)
       fprintf(stderr, "%s\n",e);
       exit(status);
     }
-  return;
 }
