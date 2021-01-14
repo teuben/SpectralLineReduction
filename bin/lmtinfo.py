@@ -81,7 +81,7 @@ def summary(ifproc, rc=False):
         print('cell=%g' % (resolution/2.0))
         print("# </lmtinfo>")
     else:    
-        print("%s %s %s  %-20s %g %g %g" % (date_obs, fn[2], src, restfreq, vlsr, dt))
+        print("%s %s  %-20s %g %g %g" % (date_obs, fn[2], src, restfreq, vlsr, dt))
 
 
 #  although we grab the command line arguments here, they are actually not
