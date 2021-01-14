@@ -43,7 +43,9 @@ void initialize_plane_axis(Plane *P, int axis, float crval, float crpix, float c
     fprintf(stderr,"Plane: Failed to allocate axis %d\n",axis);
 
   for(i=0;i<P->n[axis];i++)
-      P->caxis[axis][i] = (i-P->crpix[axis])*P->cdelt[axis]+P->crval[axis];
+      P->caxis[axis][i] = (i+1-P->crpix[axis])*P->cdelt[axis]+P->crval[axis];
+
+  printf("P-AXIS %d starts at %g\n",axis,  P->caxis[axis][0]);  
 }
 
 /** axis_index - finds the index in an axis array given a value
@@ -53,11 +55,12 @@ int plane_axis_index(Plane *P, int axis, float value)
   float result_f;
   int result_i;
   
-  result_f = (value-P->crval[axis])/P->cdelt[axis] + P->crpix[axis];
+  result_f = (value - P->crval[axis])/P->cdelt[axis] + P->crpix[axis] - 0.5;
   result_i = (int)floor(result_f);
-  if((result_i<0) || (result_i>=P->n[axis]))
-    result_i = -1;
-  return(result_i);
+  
+  if((result_i<0) || (result_i>=P->n[axis])) return -1;
+
+  return result_i;
 }
 
 /** plane_index - finds the index of an element in the plane according to 
@@ -72,7 +75,7 @@ int plane_index(Plane *P, float x, float y)
   iy = plane_axis_index(P, PLANE_Y_AXIS, y);
 
   result = iy*P->n[PLANE_X_AXIS] + ix;
-  return(result);
+  return result;
 }
 
 
@@ -187,5 +190,4 @@ void write_fits_plane(Plane *P, char *filename)
   if((retval=fits_close_file(fptr, &status)) != 0)
     print_fits_error(status);
 
-  //printf("PJT all done\n");
 } 

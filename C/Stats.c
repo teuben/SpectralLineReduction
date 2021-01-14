@@ -105,3 +105,54 @@ void rms_stats(int n, float *RMS, int *Pixel,
   }
   free(dat);
 }
+
+#if 0
+// MAD = Median Absolute Deviation
+//      (sigma = 1.4826 * mad for a normal distribution)
+real mad_moment(Moment *m)
+{
+  real median, x;
+  int i, n; 
+  Moment tmp;
+
+  if (m->ndat==0)
+    error("mad_moment cannot be computed with ndat=%d",m->ndat);
+  median = median_moment(m);
+  n = MIN(m->n, m->ndat);
+  ini_moment(&tmp,1,n);
+  for (i=0; i<n; i++) {
+    x = m->dat[i] - median;
+    if (x > 0)
+      accum_moment(&tmp,x,1.0);
+    else
+      accum_moment(&tmp,-x,1.0);
+  }
+  median = median_moment(&tmp);
+  free_moment(&tmp);
+  return median;
+}
+// MARD = Mean Absolute Relative Difference
+
+real mard_moment(Moment *m)
+{
+  real mean, x;
+  int i, n;
+  Moment tmp;
+
+  if (m->ndat==0)
+    error("mard_moment cannot be computed with ndat=%d",m->ndat);
+  mean = sum1/sum0;
+  n = MIN(m->n, m->ndat);
+  ini_moment(&tmp,1,n);
+  for (i=0; i<n; i++) {
+    x = m->dat[i] - mean;
+    if (x > 0)
+      accum_moment(&tmp,x,1.0);
+    else
+      accum_moment(&tmp,-x,1.0);
+  }
+  mean = mean_moment(&tmp);
+  free_moment(&tmp);
+  return mean;
+}
+#endif

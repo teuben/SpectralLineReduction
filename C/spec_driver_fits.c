@@ -15,7 +15,7 @@
 int main(int argc, char *argv[])
 {
   Cube C;
-  Plane Weight, Mask;
+  Plane W, M;
   SpecFile S;
   ConvolveFunction CF;
   OTFParameters OTF;
@@ -40,14 +40,11 @@ int main(int argc, char *argv[])
     strncat(C.history2,argv[i],512);
   }
 
-  //printf("1\n");
   // initialize
   initialize_otf_parameters(&OTF, argc, argv);
-  //printf("2\n");
 
   // read the first SpecFile 
   read_spec_file(&S, OTF.i_filename[0]);
-  //printf("3\n");
   // copy over obs header variables
   C.nobsnum = 1;
   C.obsnum[0] = S.obsnum;
@@ -66,7 +63,6 @@ int main(int argc, char *argv[])
   C.vlsr = S.vlsr;
   // set up convolution array for the gridding process.
   initialize_convolve_function(&CF, OTF.resolution_size, OTF.cell_size, OTF.rmax, OTF.nsamples);
-  //printf("4\n");
   if(OTF.otf_select == 1)
     initialize_jinc_filter(&CF, OTF.otf_jinc_a, OTF.otf_jinc_b, OTF.otf_jinc_c);
   else if(OTF.otf_select == 2)
@@ -90,30 +86,28 @@ int main(int argc, char *argv[])
   if (OTF.beam) 
     make_spec_beam(&S);
 
-  // initialize cube and axes
+  // initialize cube and axes such that 0 is in the center and spatial nx and ny always odd
   n[0] = 2 * (int)(floor((OTF.x_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
   n[1] = 2 * (int)(floor((OTF.y_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
   n[2] = S.nchan;
 
-  //printf("5\n");
-  initialize_cube(&C, n);
   // note that we add one to crpix's per fits convention
-  initialize_cube_axis(&C, Z_AXIS, S.CRVAL, S.CRPIX+1., S.CDELT, S.CTYPE, "km/s");
-  initialize_cube_axis(&C, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
-  initialize_cube_axis(&C, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
+  initialize_cube(&C, n);
+  initialize_cube_axis(&C,  Z_AXIS, S.CRVAL, S.CRPIX+1., S.CDELT, S.CTYPE, "km/s");
+  initialize_cube_axis(&C,  X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
+  initialize_cube_axis(&C,  Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
 
-  initialize_plane(&Weight, n);
-  initialize_plane_axis(&Weight, PLANE_X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
-  initialize_plane_axis(&Weight, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
-  //printf("6\n");
+  initialize_plane(&W, n);
+  initialize_plane_axis(&W, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
+  initialize_plane_axis(&W, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
 
-  initialize_plane(&Mask, n);
-  initialize_plane_axis(&Mask, PLANE_X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
-  initialize_plane_axis(&Mask, PLANE_Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
+  initialize_plane(&M, n);
+  initialize_plane_axis(&M, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
+  initialize_plane_axis(&M, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
   
 
   //free_spec_file(&S);     keep first one open
-  printf("axes initialized\n");
+  //printf("axes initialized\n");
 
 #if 1
   //  @todo    this implies the pix_list applies to all input files
@@ -128,7 +122,7 @@ int main(int argc, char *argv[])
 
   for(ifile=0;ifile<OTF.nfiles;ifile++)
     {
-      // read the new specfile for gridding
+      // read the new specfile for gridding, keep track of OBSNUM's
       if (ifile > 0) {
 	read_spec_file(&S, OTF.i_filename[ifile]);
 	C.obsnum[C.nobsnum] = S.obsnum;
@@ -167,6 +161,12 @@ int main(int argc, char *argv[])
 	}
       }
 
+#if 0
+      // PJT hacking for beam (-a) creation
+      S.XPos[0] = 0.5;
+      S.YPos[0] = 0.5;
+#endif      
+
       // now we do the gridding
       for(i=0;i<S.nspec;i++) {
 	if(S.use[i]) {
@@ -197,10 +197,11 @@ int main(int argc, char *argv[])
 		    iz = cube_z_index(&C, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
 		    for(k=0;k<C.n[Z_AXIS];k++)
 		      C.cube[iz+k] = C.cube[iz+k] + weight * spectrum[k];
-		    izp = plane_index(&Weight, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
-		    Weight.plane[izp] = Weight.plane[izp] + weight;
+		    izp = plane_index(&W, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
+		    W.plane[izp] = W.plane[izp] + weight;
 		    if (ii==0 && jj==0)
-		      Mask.plane[izp] = 1;
+		      M.plane[izp] = 1;
+		    // if (ii==0 && jj==0) printf("PJT      %d %d %d %d   %g %g\n",ix,iy,iz,izp,x,y);
 		  }		    
 	    }
 	} // S.use
@@ -218,15 +219,15 @@ int main(int argc, char *argv[])
       for(j=0;j<C.n[Y_AXIS];j++)
 	{
 	  y = C.caxis[Y_AXIS][j];
-	  izp = plane_index(&Weight, x, y);
+	  izp = plane_index(&W, x, y);
 	  iz = cube_z_index(&C, x, y);
 	  
-	  if(OTF.beam && Weight.plane[izp] > 0.0)
+	  if(OTF.beam && W.plane[izp] > 0.0)
 	    for(k=0;k<C.n[Z_AXIS];k++)
-	      C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
-	  else if(Mask.plane[izp] > 0.0)     
+	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];
+	  else if(M.plane[izp] > 0.0)     
 	    for(k=0;k<C.n[Z_AXIS];k++)
-	      C.cube[iz+k] = C.cube[iz+k] / Weight.plane[izp];
+	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];
 	  else
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = NAN;
@@ -236,9 +237,9 @@ int main(int argc, char *argv[])
   printf("Weighting Completed\n");
 
   // dumping the spectrum at 0,0 for fun... 
-  izp = plane_index(&Weight, 0.0, 0.0);
-  printf("Weight of %f %f is %f\n",0.0,0.0,Weight.plane[izp]);
-  if (Weight.plane[izp] == 0.0)
+  izp = plane_index(&W, 0.0, 0.0);
+  printf("Weight of %f %f is %f\n",0.0,0.0,W.plane[izp]);
+  if (W.plane[izp] == 0.0)
     printf("*** Warning: zero weights\n");
   iz = cube_z_index(&C, 0.0, 0.0);
 #if 1
@@ -260,10 +261,10 @@ int main(int argc, char *argv[])
     unlink(OTF.w_filename);
 #if 1
     printf("write weights to %s\n",OTF.w_filename);
-    write_fits_plane(&Weight, OTF.w_filename);
+    write_fits_plane(&W, OTF.w_filename);
 #else
     printf("write 0/1 mask to %s\n",OTF.w_filename);    
-    write_fits_plane(&Mask, OTF.w_filename);
+    write_fits_plane(&M, OTF.w_filename);
 #endif    
   }
 }
