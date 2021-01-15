@@ -24,6 +24,7 @@ CFLAGS += `pkg-config --cflags cfitsio netcdf`
 LIBS   += `pkg-config --libs   cfitsio netcdf`
 
 all:	spec_driver_fits
+	@./spec_driver_fits
 
 clean:
 	rm -f *.o *~ spec_driver_fits
