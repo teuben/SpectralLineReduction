@@ -412,14 +412,14 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
-  strcpy(cunit,"deg     ");
+  sprintf(comment,"deg   (%g arcsec)  ", C->resolution_size);
   bmaj = C->resolution_size / 3600.;
-  if((retval=fits_update_key(fptr, TFLOAT,  "BMAJ    ", &bmaj, cunit, &status)) != 0)
+  if((retval=fits_update_key(fptr, TFLOAT,  "BMAJ    ", &bmaj, comment, &status)) != 0)
     {
       printf("BMAJ %f\n",bmaj);
       print_fits_error(status);
     }
-  if((retval=fits_update_key(fptr, TFLOAT,  "BMIN    ", &bmaj, cunit, &status)) != 0)
+  if((retval=fits_update_key(fptr, TFLOAT,  "BMIN    ", &bmaj, comment, &status)) != 0)
     {
       printf("BMIN %f\n",bmaj);
       print_fits_error(status);
