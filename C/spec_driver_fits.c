@@ -58,21 +58,27 @@ int main(int argc, char *argv[])
   C.x_position = S.x_position;
   C.y_position = S.y_position;
   // 
-  C.resolution_size = OTF.resolution_size;
   C.restfreq = S.restfreq;
   C.vlsr = S.vlsr;
   // set up convolution array for the gridding process.
   initialize_convolve_function(&CF, OTF.resolution_size, OTF.cell_size, OTF.rmax, OTF.nsamples);
-  if(OTF.otf_select == 1)
+  if(OTF.otf_select == 1) {
     initialize_jinc_filter(&CF, OTF.otf_jinc_a, OTF.otf_jinc_b, OTF.otf_jinc_c);
-  else if(OTF.otf_select == 2)
+    C.resolution_size = 1.15 * OTF.resolution_size;
+  } else if(OTF.otf_select == 2) {
     initialize_gauss_filter(&CF, OTF.otf_jinc_b);
-  else if(OTF.otf_select == 3)
+    C.resolution_size = 1.15 * OTF.resolution_size * OTF.otf_jinc_b;    
+  } else if(OTF.otf_select == 3) {
     initialize_triangle_filter(&CF, OTF.resolution_size);
-  else if(OTF.otf_select == 4)
+    C.resolution_size = OTF.resolution_size;  
+  } else if(OTF.otf_select == 4) {
     initialize_box_filter(&CF, OTF.resolution_size);
-  else
+    C.resolution_size = OTF.resolution_size;    
+  } else {
     initialize_box_filter(&CF, OTF.cell_size/2.);
+    C.resolution_size = OTF.resolution_size;
+  }
+  // PJT:  @todo setting the C.resolution_size needs to be checked/confirmed
 
   // prints the convolution function ; n_cells denotes how much we will use?
   // @todo the scaling of delta is wrong, but irrelevant
