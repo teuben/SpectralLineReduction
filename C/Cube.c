@@ -380,7 +380,9 @@ void write_fits_cube(Cube *C, char *filename)
     }
 
   // MIRIAD says the VELO is an AIPS convention
-  strcpy(ctype,"VELO-LSR");          // nominal projection  (CASA wants VRAD)
+  // CASA wants VRAD
+  //strcpy(ctype,"VELO-LSR");        // this is like VOPT
+  strcpy(ctype,"VRAD");       
   crval = C->crval[Z_AXIS]*1000.;    // m/s
   cdelt = C->cdelt[Z_AXIS]*1000.;    // m/s
   crpix = C->crpix[Z_AXIS];
