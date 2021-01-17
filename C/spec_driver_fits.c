@@ -92,6 +92,9 @@ int main(int argc, char *argv[])
   if (OTF.beam) 
     make_spec_beam(&S);
 
+  if (OTF.x_extent != OTF.y_extent)
+      printf("WARNING: code is not working for non-square sizes");
+
   // initialize cube and axes such that 0 is in the center and spatial nx and ny always odd
   n[0] = 2 * (int)(floor((OTF.x_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
   n[1] = 2 * (int)(floor((OTF.y_extent+OTF.cell_size/2.)/OTF.cell_size)) + 1;
@@ -166,12 +169,6 @@ int main(int argc, char *argv[])
 	  seq++;
 	}
       }
-
-#if 0
-      // PJT hacking for beam (-a) creation
-      S.XPos[0] = 0.5;
-      S.YPos[0] = 0.5;
-#endif      
 
       // now we do the gridding
       for(i=0;i<S.nspec;i++) {
