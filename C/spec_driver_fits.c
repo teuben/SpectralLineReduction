@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
   int ngood=0;
   float x,y,X,Y,distance,weight,rmsweight; 
   float xpos, ypos, cosp, sinp, rot_angle = 0.0;   // future support? - grid rot_angle in degrees
+  int fuzzy_edge = 0;    //  1:  fuzzy edge      0: good sharp edge where M (mask) > 0 [should be default]
   int n[3];
   char history[512];
 
@@ -242,14 +243,20 @@ int main(int argc, char *argv[])
 	  y = C.caxis[Y_AXIS][j];
 	  izp = plane_index(&W, x, y);
 	  iz = cube_z_index(&C, x, y);
+
+	  // this is the crucial place where we decide if to keep the cell information
+	  // @todo WTMAX/WTMIN
 	  
-	  if(OTF.beam && W.plane[izp] > 0.0)
+	  if(OTF.beam && W.plane[izp] > 0.0)                    // W
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];
-	  else if(M.plane[izp] > 0.0)     
+	  else if(fuzzy_edge && W.plane[izp] > 0.0)             // W
+	    for(k=0;k<C.n[Z_AXIS];k++)
+	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];	
+	  else if(M.plane[izp] > 0.0)                           // M
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];
-	  else
+	  else                                                  // nothing
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = NAN;
 	}
