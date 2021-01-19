@@ -38,7 +38,7 @@ Cube.o : Cube.h Cube.c
 Plane.o : Plane.h Plane.c
 	$(CC) $(CFLAGS) -c Plane.c $(INCLUDES)
 
-SpecFile.o : SpecFile.h SpecFile.c
+SpecFile.o : SpecFile.h SpecFile.c Version.h
 	$(CC) $(CFLAGS) -c SpecFile.c $(INCLUDES)
 
 ConvolveFunction.o : ConvolveFunction.h ConvolveFunction.c
