@@ -91,8 +91,10 @@ int main(int argc, char *argv[])
     printf("%5.2f %8.4f\n",i*CF.delta, CF.array[i]);
 #endif
 
-  if (OTF.beam) 
+  if (OTF.beam) {
     make_spec_beam(&S);
+    fuzzy_edge = 1;
+  }
 
   if (OTF.x_extent != OTF.y_extent)
       printf("WARNING: code is not working for non-square sizes");
@@ -247,10 +249,7 @@ int main(int argc, char *argv[])
 	  // this is the crucial place where we decide if to keep the cell information
 	  // @todo WTMAX/WTMIN
 	  
-	  if(OTF.beam && W.plane[izp] > 0.0)                    // W
-	    for(k=0;k<C.n[Z_AXIS];k++)
-	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];
-	  else if(fuzzy_edge && W.plane[izp] > 0.0)             // W
+	  if(fuzzy_edge && W.plane[izp] > 0.0)                  // W
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];	
 	  else if(M.plane[izp] > 0.0)                           // M
