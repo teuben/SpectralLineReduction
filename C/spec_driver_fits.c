@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
   int ix,iy,iz,ixp,iyp,izp;
   int p0, s0, s1, seq;
   int ngood=0;
-  float x,y,X,Y,distance,weight,rmsweight;
+  float x,y,X,Y,distance,weight,rmsweight; 
+  float xpos, ypos, cosp, sinp, rot_angle = 0.0;   // future support? - grid rot_angle in degrees
   int n[3];
   char history[512];
 
@@ -113,6 +114,14 @@ int main(int argc, char *argv[])
   initialize_plane(&M, n);
   initialize_plane_axis(&M, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
   initialize_plane_axis(&M, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
+
+
+  // rot_angle = 30.0;   // PJT test
+  if (rot_angle != 0.0) {
+    printf("WARNING: rot_angle=%g\n",rot_angle);
+    cosp = cos(rot_angle/57.29577951308);
+    sinp = sin(rot_angle/57.29577951308);
+  }
   
 
   //free_spec_file(&S);     keep first one open
@@ -175,8 +184,17 @@ int main(int argc, char *argv[])
 	if(S.use[i]) {
 	  ngood++;
 	  spectrum = get_spectrum(&S,i);
-	  ix = cube_axis_index(&C, X_AXIS, S.XPos[i]);
-	  iy = cube_axis_index(&C, Y_AXIS, S.YPos[i]);
+	  
+	  if (rot_angle == 0.0) {
+	    xpos = S.XPos[i];
+	    ypos = S.YPos[i];
+	  } else {
+	    xpos =  cosp * S.XPos[i] + sinp * S.YPos[i];
+	    ypos = -sinp * S.XPos[i] + cosp * S.YPos[i];
+	      
+	  }
+	  ix = cube_axis_index(&C, X_AXIS, xpos);
+	  iy = cube_axis_index(&C, Y_AXIS, ypos);
 	  if( (ix>=0) && (iy>=0) )
 	    {
 	      for(ii=-CF.n_cells; ii<=CF.n_cells; ii++)
@@ -187,8 +205,8 @@ int main(int argc, char *argv[])
 			nout++;
 			continue;
 		      }
-		    x = S.XPos[i]-C.caxis[X_AXIS][ix+ii];
-		    y = S.YPos[i]-C.caxis[Y_AXIS][iy+jj];
+		    x = xpos-C.caxis[X_AXIS][ix+ii];
+		    y = ypos-C.caxis[Y_AXIS][iy+jj];
 		    distance = sqrt(x*x+y*y);
 		    // @todo what if S.RMS[i] == 0.0
 		    if ((S.RMS[i] != 0.0) && (OTF.noise_sigma > 0.0)) {
