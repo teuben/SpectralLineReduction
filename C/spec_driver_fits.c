@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
     strncat(C.history2,argv[i],512);
   }
 
+  exit(0);
+
+
   // initialize
   initialize_otf_parameters(&OTF, argc, argv);
 
@@ -118,14 +121,15 @@ int main(int argc, char *argv[])
   initialize_plane_axis(&M, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
   initialize_plane_axis(&M, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
 
-
-  // rot_angle = 30.0;   // PJT test
+  // rot_angle is the counter clock wise angle over which the image is rotated.
+  rot_angle = 30.0;   // PJT test
+  fuzzy_edge = 0;     // PJT test
   if (rot_angle != 0.0) {
     printf("WARNING: rot_angle=%g\n",rot_angle);
     cosp = cos(rot_angle/57.29577951308);
     sinp = sin(rot_angle/57.29577951308);
   }
-  
+  printf("WARNING fuzzy_edge=%d\n",fuzzy_edge);
 
   //free_spec_file(&S);     keep first one open
   //printf("axes initialized\n");
@@ -224,7 +228,7 @@ int main(int argc, char *argv[])
 		    izp = plane_index(&W, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
 		    W.plane[izp] = W.plane[izp] + weight;
 		    if (ii==0 && jj==0)
-		      M.plane[izp] = 1;
+		      M.plane[izp] = 1; 
 		    // if (ii==0 && jj==0) printf("PJT      %d %d %d %d   %g %g\n",ix,iy,iz,izp,x,y);
 		  }		    
 	    }
@@ -249,19 +253,19 @@ int main(int argc, char *argv[])
 	  // this is the crucial place where we decide if to keep the cell information
 	  // @todo WTMAX/WTMIN
 	  
-	  if(fuzzy_edge && W.plane[izp] > 0.0)                  // W
+	  if(M.plane[izp] > 0.0 && W.plane[izp] > 0.0 )         // M
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];	
-	  else if(M.plane[izp] > 0.0)                           // M
+	  else if(fuzzy_edge && W.plane[izp] > 0.0)             // W
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];
 	  else                                                  // nothing
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = NAN;
-	}
-    }
+	}//j
+    }//i
 
-  printf("Weighting Completed\n");
+  printf("Weighting Completed, fuzzy_edge=%d\n",fuzzy_edge);
 
   // dumping the spectrum at 0,0 for fun... 
   izp = plane_index(&W, 0.0, 0.0);
