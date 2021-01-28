@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   hlen += strlen(argv[0]);
 
   for (i=1; i<argc; i++) {
-    printf("%d: (%d) %s\n",i,hlen,argv[i]);
+    //printf("%d: (%d) %s\n",i,hlen,argv[i]);
     strncat(C.history2," "    ,MAXHIST-hlen);
     hlen++;
     strncat(C.history2,argv[i],MAXHIST-hlen);
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
   // initialize
   initialize_otf_parameters(&OTF, argc, argv);
 
+  printf("Processing %d SpecFiles:\n",OTF.nfiles);
   // read the first SpecFile 
   read_spec_file(&S, OTF.i_filename[0]);
   // copy over obs header variables
@@ -130,8 +131,8 @@ int main(int argc, char *argv[])
   initialize_plane_axis(&M, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
 
   // rot_angle is the counter clock wise angle over which the image is rotated.
-  rot_angle = 30.0;   // PJT test
-  fuzzy_edge = 0;     // PJT test
+  //rot_angle = 30.0;   // PJT test
+  //fuzzy_edge = 0;     // PJT test
   if (rot_angle != 0.0) {
     printf("WARNING: rot_angle=%g\n",rot_angle);
     cosp = cos(rot_angle/57.29577951308);
