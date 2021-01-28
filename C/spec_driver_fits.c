@@ -131,8 +131,8 @@ int main(int argc, char *argv[])
   initialize_plane_axis(&M, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
 
   // rot_angle is the counter clock wise angle over which the image is rotated.
-  rot_angle = 30.0;   // PJT test
-  fuzzy_edge = 0;     // PJT test
+  //rot_angle = 30.0;   // PJT test
+  //fuzzy_edge = 0;     // PJT test
   if (rot_angle != 0.0) {
     printf("WARNING: rot_angle=%g\n",rot_angle);
     cosp = cos(rot_angle/57.29577951308);
