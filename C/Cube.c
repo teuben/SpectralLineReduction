@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <math.h>
 #include <netcdf.h>
 #include "Cube.h"
@@ -478,6 +479,27 @@ void write_fits_cube(Cube *C, char *filename)
       printf("SPECSYS %s\n", cunit);
       print_fits_error(status);
     }
+
+  if (1)
+    {
+      char toutstr[200];
+      time_t t;
+      struct tm *tmp;
+      const char *fmt = "%Y-%m-%dT%H:%M:%S";
+
+      t = time(NULL);
+      tmp = localtime(&t);
+      // if (tmp==NULL) error("localtime failed");
+      strftime(toutstr, sizeof(toutstr), fmt, tmp);
+      // error("strftime returned 0");
+      strcpy(comment,"Date of file written");
+      if((retval=fits_update_key(fptr, TSTRING,  "DATE", toutstr, comment, &status)) != 0)
+	{
+	  printf("DATE\n");
+	  print_fits_error(status);
+	}
+    }
+
 
   strcpy(comment,"LMT observing numbers in this data: (Header.Obs.ObsNum)");
   fits_write_comment(fptr, comment, &status);
