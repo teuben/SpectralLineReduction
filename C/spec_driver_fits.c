@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   hlen += strlen(argv[0]);
 
   for (i=1; i<argc; i++) {
-    printf("%d: (%d) %s\n",i,hlen,argv[i]);
+    //printf("%d: (%d) %s\n",i,hlen,argv[i]);
     strncat(C.history2," "    ,MAXHIST-hlen);
     hlen++;
     strncat(C.history2,argv[i],MAXHIST-hlen);
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
   // initialize
   initialize_otf_parameters(&OTF, argc, argv);
 
+  printf("Processing %d SpecFiles:\n",OTF.nfiles);
   // read the first SpecFile 
   read_spec_file(&S, OTF.i_filename[0]);
   // copy over obs header variables
