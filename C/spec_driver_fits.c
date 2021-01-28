@@ -11,6 +11,7 @@
 #include "Stats.h"
 #include "Version.h"
 
+#define MAXHIST 2048
 
 int main(int argc, char *argv[])
 {
@@ -31,15 +32,16 @@ int main(int argc, char *argv[])
   float xpos, ypos, cosp, sinp, rot_angle = 0.0;   // future support? - grid rot_angle in degrees
   int fuzzy_edge = 0;    //  1:  fuzzy edge      0: good sharp edge where M (mask) > 0 [should be default]
   int n[3];
-  char history[512];
+  char history[MAXHIST];
 
   printf("%s %s\n", argv[0], LMTSLR_VERSION);
   if (argc == 1) exit(0);
 
-  strncpy(C.history2,argv[0],512);
+  // @todo this failed despite the "ncpy"  https://github.com/astroumd/lmtoy/issues/13
+  strncpy(C.history2,argv[0],MAXHIST);
   for (i=1; i<argc; i++) {
-    strncat(C.history2," "    ,512);
-    strncat(C.history2,argv[i],512);
+    strncat(C.history2," "    ,MAXHIST);
+    strncat(C.history2,argv[i],MAXHIST);
   }
 
   exit(0);
@@ -58,7 +60,7 @@ int main(int argc, char *argv[])
   strncpy(C.source,S.source,18);  // @todo 18, seriously?   - there's 20, 32 and now 18?
   printf("%s\n",C.source);
   strncpy(C.date_obs,S.date_obs,20);
-  strncpy(C.history1,S.history,512);   
+  strncpy(C.history1,S.history,MAXHIST);   
   printf("DATE-OBS %s\n",C.date_obs);  
   C.x_position = S.x_position;
   C.y_position = S.y_position;
