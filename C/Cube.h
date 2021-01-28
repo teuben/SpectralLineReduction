@@ -5,6 +5,8 @@
 #define Y_AXIS 0
 #define Z_AXIS 2
 
+#include "Version.h"
+
 typedef struct 
 {
   int obsnum[512];
@@ -23,8 +25,8 @@ typedef struct
   float zsource;
   char date_obs[20];
   float resolution_size;
-  char history1[512];
-  char history2[512];
+  char history1[MAXHIST];
+  char history2[MAXHIST];
 } Cube;
 
 void initialize_cube(Cube* C, int *n);

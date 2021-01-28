@@ -3,15 +3,14 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
+#include "Version.h"     // also defines some common MAXabc parameters
 #include "Cube.h"
 #include "Plane.h"
 #include "ConvolveFunction.h"
 #include "OTFParameters.h"
 #include "SpecFile.h"
 #include "Stats.h"
-#include "Version.h"
 
-#define MAXHIST 2048
 
 int main(int argc, char *argv[])
 {
@@ -32,20 +31,27 @@ int main(int argc, char *argv[])
   float xpos, ypos, cosp, sinp, rot_angle = 0.0;   // future support? - grid rot_angle in degrees
   int fuzzy_edge = 0;    //  1:  fuzzy edge      0: good sharp edge where M (mask) > 0 [should be default]
   int n[3];
-  char history[MAXHIST];
+  int hlen;
 
   printf("%s %s\n", argv[0], LMTSLR_VERSION);
   if (argc == 1) exit(0);
 
   // @todo this failed despite the "ncpy"  https://github.com/astroumd/lmtoy/issues/13
-  strncpy(C.history2,argv[0],MAXHIST);
+  hlen = 0;
+  strncpy(C.history2,argv[0],MAXHIST-hlen);
+  hlen += strlen(argv[0]);
+
   for (i=1; i<argc; i++) {
-    strncat(C.history2," "    ,MAXHIST);
-    strncat(C.history2,argv[i],MAXHIST);
+    printf("%d: (%d) %s\n",i,hlen,argv[i]);
+    strncat(C.history2," "    ,MAXHIST-hlen);
+    hlen++;
+    strncat(C.history2,argv[i],MAXHIST-hlen);
+    hlen += strlen(argv[i]);
+    if (hlen<0) {
+      printf("argv too long\n");
+      exit(1);
+    }
   }
-
-  exit(0);
-
 
   // initialize
   initialize_otf_parameters(&OTF, argc, argv);
