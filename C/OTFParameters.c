@@ -135,7 +135,7 @@ void decode_file_list(OTFParameters *OTF, char *the_list)
     int i;
     char** tokens;
 
-    //printf("file list=%s\n", the_list);
+    printf("file list=%s\n", the_list);
 
     tokens = str_split(the_list, ',');
 
@@ -283,10 +283,10 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  OTF->noise_sigma = atof(optarg);
 	  break;
 	case 'x':
-	  OTF->x_extent = atof(optarg);
+	  OTF->y_extent = atof(optarg);       // X and Y axes are reversed
 	  break;
 	case 'y':
-	  OTF->y_extent = atof(optarg);
+	  OTF->x_extent = atof(optarg);
 	  break;
 	case 'f':
 	  OTF->otf_select = atoi(optarg);
