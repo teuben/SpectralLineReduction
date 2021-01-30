@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 	  } else {
 	    xpos =  cosp * S.XPos[i] + sinp * S.YPos[i];
 	    ypos = -sinp * S.XPos[i] + cosp * S.YPos[i];
-	      
+ 	      
 	  }
 	  ix = cube_axis_index(&C, X_AXIS, xpos);
 	  iy = cube_axis_index(&C, Y_AXIS, ypos);
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 		    izp = plane_index(&W, C.caxis[X_AXIS][ix+ii], C.caxis[Y_AXIS][iy+jj]);
 		    W.plane[izp] = W.plane[izp] + weight;
 		    if (ii==0 && jj==0)
-		      M.plane[izp] = 1; 
+		      M.plane[izp] = 1;
 		    // if (ii==0 && jj==0) printf("PJT      %d %d %d %d   %g %g\n",ix,iy,iz,izp,x,y);
 		  }		    
 	    }
@@ -261,7 +261,8 @@ int main(int argc, char *argv[])
 
 	  // this is the crucial place where we decide if to keep the cell information
 	  // @todo WTMAX/WTMIN
-	  
+
+#if 0
 	  if(M.plane[izp] > 0.0 && W.plane[izp] > 0.0 )         // M
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];	
@@ -271,6 +272,18 @@ int main(int argc, char *argv[])
 	  else                                                  // nothing
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = NAN;
+#else
+	  // old style with fuzzy_edge=0 "hardcoded"
+          if(M.plane[izp] > 0.0 && W.plane[izp] > 0.0 )         // M
+            for(k=0;k<C.n[Z_AXIS];k++)
+              C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];       
+          else if(M.plane[izp] > 0.0)                           // M
+            for(k=0;k<C.n[Z_AXIS];k++)
+              C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];
+          else                                                  // nothing
+            for(k=0;k<C.n[Z_AXIS];k++)
+              C.cube[iz+k] = NAN;
+#endif	  
 	}//j
     }//i
 
