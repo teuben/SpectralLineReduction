@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 	  // this is the crucial place where we decide if to keep the cell information
 	  // @todo WTMAX/WTMIN
 
-#if 0
+#if 1
 	  if(M.plane[izp] > 0.0 && W.plane[izp] > 0.0 )         // M
 	    for(k=0;k<C.n[Z_AXIS];k++)
 	      C.cube[iz+k] = C.cube[iz+k] / W.plane[izp];	
