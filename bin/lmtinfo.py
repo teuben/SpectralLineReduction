@@ -104,10 +104,16 @@ if len(sys.argv) == 2:
         path = ifproc
         fn = glob.glob('%s/ifproc/ifproc*.nc' % path)
         for f in fn:
-            summary(f)
+            try:
+                summary(f)
+            except:
+                print("1900-00-00 %s: failed" % f)
         sys.exit(0)
     elif os.path.exists(ifproc):
-        summary(ifproc,rc=True)
+        try:
+            summary(ifproc,rc=True)
+        except:
+            print("%s: failed" % ifproc)
                
 elif len(sys.argv) == 3:
                                                      # mode 2: path and obsnum
