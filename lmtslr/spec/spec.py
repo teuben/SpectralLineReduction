@@ -651,6 +651,8 @@ class SpecBank():
                                      [self.ifproc.time[-1]])
 
         self.nroach = len(roach_files)
+        if self.nroach != len(roach_pixels_all):
+            print("Warning: only %d/%d roach files found" % (self.nroach,len(roach_pixels_all)))
 
         self.roach_pixel_ids = []
         self.roach = []
