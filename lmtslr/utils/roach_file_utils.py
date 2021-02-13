@@ -37,6 +37,10 @@ def lookup_roach_files(obsnum,
     if filenames == []:
         if debug:
             print('lookup_roach_files: no files for obsnum', obsnum)
+    else:
+        if len(filenames) != len(roach_list):
+            print('%s: %d/%d missing roach files for obsnum=%d' % (path,len(filenames),len(roach_list),obsnum))
+        
     return (filenames, result)
 
 
