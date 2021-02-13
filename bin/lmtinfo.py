@@ -109,7 +109,13 @@ if len(sys.argv) == 2:
             try:
                 summary(f)
             except:
-                print("1900-00-00 %s: failed" % f)
+                try:
+                    yyyymmdd = f.split('/')[-1].split('_')[1]
+                    obsnum   = f.split('/')[-1].split('_')[2]
+                    print("%s          %s   failed on %s" % (yyyymmdd,obsnum,f))
+                except:
+                    print("1900-00-00       failed on %s" % f)
+                
         sys.exit(0)
     elif os.path.exists(ifproc):
         try:
