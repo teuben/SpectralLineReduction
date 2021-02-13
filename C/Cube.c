@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <math.h>
 #include <netcdf.h>
 #include "Cube.h"
@@ -287,7 +288,9 @@ void write_fits_cube(Cube *C, char *filename)
       printf("INSTRUME\n");
       print_fits_error(status);
     }
-  // OBSERVER
+  
+  // @todo OBSERVER (the PI ?)
+  
   if((retval=fits_update_key(fptr, TSTRING, "OBJECT  ", C->source, " ", &status)) != 0)
     {
       printf("OBJECT\n");
@@ -381,7 +384,8 @@ void write_fits_cube(Cube *C, char *filename)
 
   // MIRIAD says the VELO is an AIPS convention
   // CASA wants VRAD
-  //strcpy(ctype,"VELO-LSR");        // this is like VOPT
+  // strcpy(ctype,"VELO-LSR");        // this becomes VOPT in CASA, unless you add VELREF=257 ,then it's ok
+  // VELO-F2V (but VELO-V2F fails) should be same, but is not 
   strcpy(ctype,"VRAD");       
   crval = C->crval[Z_AXIS]*1000.;    // m/s
   cdelt = C->cdelt[Z_AXIS]*1000.;    // m/s
@@ -413,6 +417,15 @@ void write_fits_cube(Cube *C, char *filename)
       printf("CUNIT3 %s\n",cunit);
       print_fits_error(status);
     }
+
+  // Alternate CTYPE3F = 'FREQ' could be made here
+  // SPECSYSF = 'LSRK'
+  // SSYSOBSF = 'TOPOCENT'
+  // CDELT3F,CRPIX3F,CRVAL3F
+
+  // The original spectral axis is lost in the current workflow
+  // the --slide keyword in the HISTORY does not record the original channel numbers
+
 
   sprintf(comment,"deg   (%g arcsec)  ", C->resolution_size);
   bmaj = C->resolution_size / 3600.;
@@ -446,6 +459,11 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
+
+  // Might be nice if these are needed for any back-tracking in the future:
+  // Header.Sky.ObsVel
+  // Header.Sky.BaryVel
+  
   strcpy(comment,"VLSR, VSOURCE and ZSOURCE need to be properly looked at ");
   fits_write_comment(fptr, comment, &status);
 
@@ -470,13 +488,52 @@ void write_fits_cube(Cube *C, char *filename)
       print_fits_error(status);
     }
 
+  int velref = 257;
+  strcpy(comment,"greisen?");
+  if((retval=fits_update_key(fptr, TINT,  "VELREF", &velref, comment, &status)) != 0)
+    {
+      printf("VELREF %d\n", velref);
+      print_fits_error(status);
+    }
+  
+
   // @todo this is assumed here, but should be fixed if upstream not VELO-LSR was choosen
+  // LSRK vs. LSRD
   strcpy(cunit,"LSRK");
-  strcpy(comment,"could be wrong");
+  strcpy(comment,"depends on --x_axis ?");
   if((retval=fits_update_key(fptr, TSTRING,  "SPECSYS", cunit, comment, &status)) != 0)
     {
       printf("SPECSYS %s\n", cunit);
       print_fits_error(status);
+    }
+
+  // can't hurt, right?
+  strcpy(cunit,"TOPOCENT");
+  strcpy(comment,"[Greisen 2009]");
+  if((retval=fits_update_key(fptr, TSTRING,  "SSYSOBS", cunit, comment, &status)) != 0)
+    {
+      printf("SSYSOBS %s\n", cunit);
+      print_fits_error(status);
+    }
+
+  if (1)
+    {
+      char toutstr[200];
+      time_t t;
+      struct tm *tmp;
+      const char *fmt = "%Y-%m-%dT%H:%M:%S";
+
+      t = time(NULL);
+      tmp = localtime(&t);
+      // if (tmp==NULL) error("localtime failed");
+      strftime(toutstr, sizeof(toutstr), fmt, tmp);
+      // error("strftime returned 0");
+      strcpy(comment,"Date of file written");
+      if((retval=fits_update_key(fptr, TSTRING,  "DATE", toutstr, comment, &status)) != 0)
+	{
+	  printf("DATE\n");
+	  print_fits_error(status);
+	}
     }
 
   strcpy(comment,"LMT observing numbers in this data: (Header.Obs.ObsNum)");

@@ -57,6 +57,7 @@ def summary(ifproc, rc=False):
     skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
     restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
     bbtime = nc.variables['Data.IfProc.BasebandTime']
+    obspgm = b''.join(nc.variables['Header.Dcs.ObsPgm'][:]).decode().strip()
 
     date_obs = nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
     date_obs = datetime.datetime.fromtimestamp(date_obs).strftime('%Y-%m-%dT%H:%M:%S')
@@ -72,6 +73,7 @@ def summary(ifproc, rc=False):
         print('# ifproc="%s"' % ifproc)
         print('# date-obs="%s"' % date_obs)
         print('# inttime=%g sec' % dt)
+        print('# obspgm="%s"' % obspgm)
         print('vlsr=%g' % vlsr)
         print('skyfreq=%g' % skyfreq)
         print('restfreq=%g' % restfreq)
@@ -81,7 +83,7 @@ def summary(ifproc, rc=False):
         print('cell=%g' % (resolution/2.0))
         print("# </lmtinfo>")
     else:    
-        print("%s %s  %-20s %g %g %g" % (date_obs, fn[2], src, restfreq, vlsr, dt))
+        print("%s %s  %-5s %-20s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
 
 
 #  although we grab the command line arguments here, they are actually not
@@ -104,10 +106,16 @@ if len(sys.argv) == 2:
         path = ifproc
         fn = glob.glob('%s/ifproc/ifproc*.nc' % path)
         for f in fn:
-            summary(f)
+            try:
+                summary(f)
+            except:
+                print("1900-00-00 %s: failed" % f)
         sys.exit(0)
     elif os.path.exists(ifproc):
-        summary(ifproc,rc=True)
+        try:
+            summary(ifproc,rc=True)
+        except:
+            print("%s: failed" % ifproc)
                
 elif len(sys.argv) == 3:
                                                      # mode 2: path and obsnum

@@ -76,7 +76,7 @@ void rms_stats(int n, float *RMS, int *Pixel,
     m1 = dat[k/4];
     m2 = dat[k/2];      // median
     m3 = dat[(k*3)/4];
-    printf("RMS count %d %d  %g %g %g \n",i, k, mean, m2, std);
+    // printf("RMS count %d %d  %g %g %g \n",i, k, mean, m2, std);
 
     // 
     iqr = m3-m1;
@@ -98,9 +98,9 @@ void rms_stats(int n, float *RMS, int *Pixel,
     else
       RMS_cut[i] = mean - rms_cutoff * std;          // robust cutoff
       
-    printf("RMS count %d %d  %g %g %g   %g\n",i,l, mean, mean, std, RMS_cut[i]);    
+    //printf("RMS count %d %d  %g %g %g   %g\n",i,l, mean, mean, std, RMS_cut[i]);    
 
-    printf("\n");
+    //printf("\n");
     
   }
   free(dat);
