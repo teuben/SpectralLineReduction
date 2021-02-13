@@ -9,7 +9,7 @@
 
 typedef struct 
 {
-  int obsnum[512];
+  int obsnum[MAXOBS];
   int nobsnum;
   char source[32];
   float x_position, y_position;
