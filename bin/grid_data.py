@@ -19,7 +19,7 @@
 --otf_a OTF_A                 OTF A parameter [default: 1.1]
 --otf_b OTF_B                 OTF B parameter [default: 4.75]
 --otf_c OTF_C                 OTF C parameter [default: 2.0]
---sample P,S0,S1,P,...        Blank sample S0 to S1 for pixel P, etc. [Default: -1]
+--sample P,S0,S1,P,...        Blank sample S0 to S1 for pixel P, etc. [Default: -1,0,0]
 
 -h --help                     show this help
 
