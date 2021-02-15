@@ -57,6 +57,9 @@ def summary(ifproc, rc=False):
     skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
     restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
     bbtime = nc.variables['Data.IfProc.BasebandTime']
+    xlen = nc.variables['Header.Map.XLength'][0] * 206264.806
+    ylen = nc.variables['Header.Map.YLength'][0] * 206264.806
+    hpbw = nc.variables['Header.Map.HPBW'][0]
 
     date_obs = nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
     date_obs = datetime.datetime.fromtimestamp(date_obs).strftime('%Y-%m-%dT%H:%M:%S')
@@ -79,6 +82,9 @@ def summary(ifproc, rc=False):
         resolution = math.ceil(1.0 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806)
         print('resolution=%g' % resolution)
         print('cell=%g' % (resolution/2.0))
+        print('x_extent=%g' % xlen)
+        print('y_extent=%g' % ylen)
+        
         print("# </lmtinfo>")
     else:    
         print("%s %s  %-20s %g %g %g" % (date_obs, fn[2], src, restfreq, vlsr, dt))
