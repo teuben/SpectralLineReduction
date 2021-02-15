@@ -14,12 +14,14 @@ def lookup_roach_files(obsnum,
     Args:
         obsnum (int): target obvservation number
         roach_list (list): list of the directories of roach files
-        path (str): path to the roach directories
+        path (str): path to the where roach sub-directories are
         debug (boolean): if debug True, tends to print out more information
     Returns:
         (filenames (list), result (int)) : list of file names, number 
         of files found
     """
+    if not os.path.isdir(path):
+        print("Warning: path=%s does not exist" % path)
     nroach = len(roach_list)
     filenames = []
     result = 0
