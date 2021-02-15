@@ -28,8 +28,6 @@ per line. Example of output:
       2020-02-20  091111  NGC5194     115.271  463       7
       2020-02-20  091112  NGC5194     115.271  463    6940
 
-
-
 """
 
 import sys
@@ -58,6 +56,10 @@ def summary(ifproc, rc=False):
     restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
     bbtime = nc.variables['Data.IfProc.BasebandTime']
     obspgm = b''.join(nc.variables['Header.Dcs.ObsPgm'][:]).decode().strip()
+    # the following Map only if obspgm=='Map'
+    xlen = nc.variables['Header.Map.XLength'][0] * 206264.806
+    ylen = nc.variables['Header.Map.YLength'][0] * 206264.806
+    hpbw = nc.variables['Header.Map.HPBW'][0]
 
     date_obs = nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
     date_obs = datetime.datetime.fromtimestamp(date_obs).strftime('%Y-%m-%dT%H:%M:%S')
@@ -81,6 +83,9 @@ def summary(ifproc, rc=False):
         resolution = math.ceil(1.0 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806)
         print('resolution=%g' % resolution)
         print('cell=%g' % (resolution/2.0))
+        print('x_extent=%g' % xlen)
+        print('y_extent=%g' % ylen)
+        
         print("# </lmtinfo>")
     else:    
         print("%s %s  %-5s %-20s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
@@ -109,7 +114,13 @@ if len(sys.argv) == 2:
             try:
                 summary(f)
             except:
-                print("1900-00-00 %s: failed" % f)
+                try:
+                    yyyymmdd = f.split('/')[-1].split('_')[1]
+                    obsnum   = f.split('/')[-1].split('_')[2]
+                    print("%s          %s   failed on %s" % (yyyymmdd,obsnum,f))
+                except:
+                    print("1900-00-00       failed on %s" % f)
+                
         sys.exit(0)
     elif os.path.exists(ifproc):
         try:

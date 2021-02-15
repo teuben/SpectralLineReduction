@@ -61,7 +61,7 @@ void decode_pix_list(OTFParameters *OTF, char *the_list)
 
     len = strlen(the_list);
 
-    printf("PJT pix_list=%s\n\n", the_list);
+    //printf("PJT pix_list=%s\n\n", the_list);
 
     if (the_list[0] == '[') {
       strncpy(p,&the_list[1],len-2);
