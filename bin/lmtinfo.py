@@ -28,8 +28,6 @@ per line. Example of output:
       2020-02-20  091111  NGC5194     115.271  463       7
       2020-02-20  091112  NGC5194     115.271  463    6940
 
-
-
 """
 
 import sys
@@ -57,6 +55,8 @@ def summary(ifproc, rc=False):
     skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
     restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
     bbtime = nc.variables['Data.IfProc.BasebandTime']
+    obspgm = b''.join(nc.variables['Header.Dcs.ObsPgm'][:]).decode().strip()
+    # the following Map only if obspgm=='Map'
     xlen = nc.variables['Header.Map.XLength'][0] * 206264.806
     ylen = nc.variables['Header.Map.YLength'][0] * 206264.806
     hpbw = nc.variables['Header.Map.HPBW'][0]
@@ -75,6 +75,7 @@ def summary(ifproc, rc=False):
         print('# ifproc="%s"' % ifproc)
         print('# date-obs="%s"' % date_obs)
         print('# inttime=%g sec' % dt)
+        print('# obspgm="%s"' % obspgm)
         print('vlsr=%g' % vlsr)
         print('skyfreq=%g' % skyfreq)
         print('restfreq=%g' % restfreq)
@@ -87,7 +88,7 @@ def summary(ifproc, rc=False):
         
         print("# </lmtinfo>")
     else:    
-        print("%s %s  %-20s %g %g %g" % (date_obs, fn[2], src, restfreq, vlsr, dt))
+        print("%s %s  %-5s %-20s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
 
 
 #  although we grab the command line arguments here, they are actually not
@@ -110,10 +111,22 @@ if len(sys.argv) == 2:
         path = ifproc
         fn = glob.glob('%s/ifproc/ifproc*.nc' % path)
         for f in fn:
-            summary(f)
+            try:
+                summary(f)
+            except:
+                try:
+                    yyyymmdd = f.split('/')[-1].split('_')[1]
+                    obsnum   = f.split('/')[-1].split('_')[2]
+                    print("%s          %s   failed on %s" % (yyyymmdd,obsnum,f))
+                except:
+                    print("1900-00-00       failed on %s" % f)
+                
         sys.exit(0)
     elif os.path.exists(ifproc):
-        summary(ifproc,rc=True)
+        try:
+            summary(ifproc,rc=True)
+        except:
+            print("%s: failed" % ifproc)
                
 elif len(sys.argv) == 3:
                                                      # mode 2: path and obsnum

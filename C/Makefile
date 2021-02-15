@@ -1,3 +1,7 @@
+#    allow a site file, pick from available makedefs.XXX example or write your own
+-include makedefs
+
+#   
 ifdef CFITSIO_PATH
 INCLUDES += -I $(CFITSIO_PATH)/include
 LIBS += -L $(CFITSIO_PATH)/lib -Xlinker -rpath -Xlinker $(CFITSIO_PATH)
@@ -32,7 +36,7 @@ clean:
 install: spec_driver_fits
 	cp spec_driver_fits ../bin
 
-Cube.o : Cube.h Cube.c
+Cube.o : Cube.h Cube.c 
 	$(CC) $(CFLAGS) -c Cube.c $(INCLUDES)
 
 Plane.o : Plane.h Plane.c
