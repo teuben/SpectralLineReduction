@@ -121,7 +121,7 @@ def rsr_summary(rsr_file, rc=False):
     nc.close()
 
     # no rc mode, only one line summary
-    print("%s  %d  RSR   %s  %.6f %.6f" %   (date_obs, obsnum, src, ra, dec))
+    print("%s  %d  RSR   %-30s  %.6f %.6f" %   (date_obs, obsnum, src, ra, dec))
 
 
 #  although we grab the command line arguments here, they are actually not
