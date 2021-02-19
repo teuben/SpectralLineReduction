@@ -4,6 +4,7 @@
 #                by an external pipeline that needs input.
 #                This list is both bash and python friendly: we only allow integer/float/string
 #
+#  To run for all the RSR and SLR in Feb 2021 took X mins on "cln"
 
 """
 Usage: lmtinfo.py OBSNUM
@@ -111,11 +112,16 @@ def rsr_summary(rsr_file, rc=False):
     date_obs = b''.join(nc.variables['Header.Radiometer.UpdateDate'][:]).decode().strip()
     
     # Header.Weather.UpdateDate = "22/01/15 0:39:48
+    # Header.Source.Ra
+    # Header.Source.Dec
+    ra  = nc.variables['Header.Source.Ra'][0]  * 57.2957795131
+    dec = nc.variables['Header.Source.Dec'][0] * 57.2957795131
     
+        
     nc.close()
 
     # no rc mode, only one line summary
-    print("%s  %d  RSR   %s" %   (date_obs, obsnum, src))
+    print("%s  %d  RSR   %s  %.6f %.6f" %   (date_obs, obsnum, src, ra, dec))
 
 
 #  although we grab the command line arguments here, they are actually not
@@ -137,7 +143,13 @@ if len(sys.argv) == 2:
     if os.path.isdir(ifproc):
         path = ifproc
 
-        chassis = -1
+        # pick one, but they all seem to have different # data, 1 has the most
+        #RedshiftChassis0_2011-05-08_001809_00_0001.nc - RedshiftChassis0_2020-03-05_092087_00_0001.nc
+        #RedshiftChassis1_2011-05-09_001819_00_0001.nc - RedshiftChassis1_2020-03-11_092345_00_0001.nc
+        #RedshiftChassis2_2011-05-09_001819_00_0001.nc - RedshiftChassis2_2020-03-11_092345_00_0001.nc
+        #RedshiftChassis3_2013-05-04_007484_00_0001.nc - RedshiftChassis3_2020-03-11_092345_00_0001.nc
+
+        chassis = 1
         if chassis < 0:
             globs = '%s/RedshiftChassis?/RedshiftChassis?_*.nc'  % (path)
         else:
