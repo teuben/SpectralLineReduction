@@ -4,7 +4,7 @@
 #                by an external pipeline that needs input.
 #                This list is both bash and python friendly: we only allow integer/float/string
 #
-#  To run for all the RSR and SLR in Feb 2021 took X mins on "cln"
+#  To run for all the RSR and SLR in Feb 2021 took 9 mins on "cln"
 
 """
 Usage: lmtinfo.py OBSNUM
@@ -21,13 +21,17 @@ in a "rc" style for the pipeline. If more OBSNUM are possible, for example by on
 giving a PATH, all possible OBSNUMs are listed with a short summary, one OBSNUM
 per line. Example of output:
 
-      #     DATE  OBSNUM   SOURCE     RESTFRQ VLSR INTTIME
-      2018-11-16  079447  IRC+10216   115.271  -20       8
-      2018-11-16  079448  IRC+10216   115.271  -20     686
-      2020-02-18  090910  NGC5194     115.271  463       7
-      2020-02-18  090911  NGC5194     115.271  463    3986
-      2020-02-20  091111  NGC5194     115.271  463       7
-      2020-02-20  091112  NGC5194     115.271  463    6940
+      #     DATE  OBSNUM   OBSPGM SOURCE      RESTFRQ VLSR INTTIME
+      2018-11-16  079447   Cal    IRC+10216   115.271  -20       8
+      2018-11-16  079448   Map    IRC+10216   115.271  -20     686
+      2020-02-18  090910   Cal    NGC5194     115.271  463       7
+      2020-02-18  090911   Map    NGC5194     115.271  463    3986
+      2020-02-20  091111   Cal    NGC5194     115.271  463       7
+      2020-02-20  091112   Map    NGC5194     115.271  463    6940
+
+OBSNUM for early SLR (testing?) are 99nnnnn,
+but after 2018-04-14 back to the normal nnnnnn, where 074686
+seems to be the first.
 
 """
 
@@ -99,6 +103,34 @@ def slr_summary(ifproc, rc=False):
 
 
 def rsr_summary(rsr_file, rc=False):
+    def new_date_obs(date):
+        """
+        date_obs from RSR have a few common non-ISO formats:
+        date = '30/03/2016 03:50:08'   case-1
+        date = '2013-12-16 21:10:07'   case-2
+        date = '05-03-2020 02:19:06'   case-3
+        date = '01:57:07 20/05/18'     case-4
+        """
+        d  = date.split()
+        nd = len(d)
+        if nd == 1:
+            return date
+        if nd == 2:
+            if date[2]==':':                      # case-4
+                dmy = d[1].split('/')
+                return '20%s-%s-%sT%s' % (dmy[2],dmy[1],dmy[0],d[0])
+            if date[2]=='-':                      # case-3
+                dmy = d[0].split('-')
+                return '%s-%s-%sT%s' % (dmy[2],dmy[1],dmy[0],d[1])                
+            if date[4]=='-':                      # case-2
+                return '%sT%s' % (d[0],d[1])
+            if date[2]=='/':                      # case-1
+                dmy = d[0].split('/')
+                return '%s-%s-%sT%s' % (dmy[2],dmy[1],dmy[0],d[1])
+        # uncaught cases
+        return date
+        
+                
     # RedshiftChassis2/RedshiftChassis2_2015-01-22_033551_00_0001.nc
     nc = netCDF4.Dataset(rsr_file)
 
@@ -110,6 +142,7 @@ def rsr_summary(rsr_file, rc=False):
     
     # Header.Radiometer.UpdateDate = "21/01/2015 23:12:07
     date_obs = b''.join(nc.variables['Header.Radiometer.UpdateDate'][:]).decode().strip()
+    date_obs = new_date_obs(date_obs)
     
     # Header.Weather.UpdateDate = "22/01/15 0:39:48
     # Header.Source.Ra
@@ -134,7 +167,7 @@ arguments = docopt(__doc__,options_first=True, version='0.1')
 if len(sys.argv) == 2:
                                                      # mode 1: obsnum or nc_file or path
     obsnum = sys.argv[1]
-    fn = glob.glob('*/ifproc/ifproc*%s*.nc' % obsnum)
+    fn = glob.glob('*/ifproc/ifproc_*%s*.nc' % obsnum)
     if len(fn) > 0:
         ifproc = fn[0]
     else:
