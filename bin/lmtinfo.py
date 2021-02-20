@@ -99,7 +99,7 @@ def slr_summary(ifproc, rc=False):
         
         print("# </lmtinfo>")
     else:    
-        print("%s %s  %-5s %-20s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
+        print("%s %7s  %-5s %-20s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
 
 
 def rsr_summary(rsr_file, rc=False):
@@ -154,7 +154,7 @@ def rsr_summary(rsr_file, rc=False):
     nc.close()
 
     # no rc mode, only one line summary
-    print("%s  %d  RSR   %-30s  %.6f %.6f" %   (date_obs, obsnum, src, ra, dec))
+    print("%s  %7d  RSR   %-30s  %.6f %.6f" %   (date_obs, obsnum, src, ra, dec))
 
 
 #  although we grab the command line arguments here, they are actually not
