@@ -182,6 +182,9 @@ arguments = docopt(__doc__,options_first=True, version='0.1')
 #print(arguments)
 
 if len(sys.argv) == 2:
+
+    print("# Y-M-D   T H:M:S     ObsNum ObsPgm SourceName                     RestFreq  VLSR   TINT     RA        DEC          AZ    EL")
+    
                                                      # mode 1: obsnum or nc_file or path
     obsnum = sys.argv[1]
     fn = glob.glob('*/ifproc/ifproc_*%s*.nc' % obsnum)
