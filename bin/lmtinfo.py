@@ -210,8 +210,14 @@ if len(sys.argv) == 2:
             try:
                 rsr_summary(f)
             except:
-                print("Failing on ",f)
-            
+                # Failing on  /home/teuben/LMT/data_lmt/RedshiftChassis1/RedshiftChassis1_2013-04-18_006779_00_0004.nc
+                try:
+                    yyyymmdd = f.split('/')[-1].split('_')[1]
+                    obsnum   = f.split('/')[-1].split('_')[2]
+                except:
+                    yyyymmdd = "1900-00-00"
+                    obsnum   = " "
+                print("%-20s %7s  failed for %s" % (yyyymmdd,obsnum,f))                    
 
         globs = '%s/ifproc/ifproc*.nc' % path
         fn = glob.glob(globs)
