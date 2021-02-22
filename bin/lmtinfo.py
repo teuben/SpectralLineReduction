@@ -74,18 +74,24 @@ def slr_summary(ifproc, rc=False):
 
     date_obs = nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
     date_obs = datetime.datetime.fromtimestamp(date_obs).strftime('%Y-%m-%dT%H:%M:%S')
-    
-    
+
+    ra  = nc.variables['Header.Source.Ra'][0]  * 57.2957795131
+    dec = nc.variables['Header.Source.Dec'][0] * 57.2957795131
+    az  = nc.variables['Header.Sky.AzReq'][0]  * 57.2957795131
+    el  = nc.variables['Header.Sky.ElReq'][0] * 57.2957795131
+
     t0 = float(bbtime[0].data)
     t1 = float(bbtime[-1].data)
-    dt = t1-t0
+    t2 = float(bbtime[-2].data)    
+    tint = t1-t0 + (t1-t2)
+    
     nc.close()
-
+        
     if rc:
         print('# <lmtinfo>')
         print('# ifproc="%s"' % ifproc)
         print('# date-obs="%s"' % date_obs)
-        print('# inttime=%g sec' % dt)
+        print('# inttime=%g sec' % tint)
         print('# obspgm="%s"' % obspgm)
         print('vlsr=%g' % vlsr)
         print('skyfreq=%g' % skyfreq)
@@ -99,8 +105,9 @@ def slr_summary(ifproc, rc=False):
         
         print("# </lmtinfo>")
     else:    
-        print("%s %7s  %-5s %-20s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
+        print("%-20s %7s  %-5s %-30s %8.4f %5.f    %5.1f  %10.6f %10.6f  %5.1f %5.1f" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, tint, ra, dec, az, el))
 
+#       print("%-20s %7d  %-5s %-30s RSR  0      %5.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
 
 def rsr_summary(rsr_file, rc=False):
     def new_date_obs(date):
@@ -138,7 +145,10 @@ def rsr_summary(rsr_file, rc=False):
     src = b''.join(nc.variables['Header.Source.SourceName'][:]).decode().strip()
     
     # Header.Dcs.ObsNum = 33551 ;
-    obsnum = nc.variables['Header.Dcs.ObsNum'][0] 
+    obsnum = nc.variables['Header.Dcs.ObsNum'][0]
+
+    # Bs, Cal
+    obspgm = b''.join(nc.variables['Header.Dcs.ObsPgm'][:]).decode().strip()
     
     # Header.Radiometer.UpdateDate = "21/01/2015 23:12:07
     date_obs = b''.join(nc.variables['Header.Radiometer.UpdateDate'][:]).decode().strip()
@@ -149,13 +159,20 @@ def rsr_summary(rsr_file, rc=False):
     # Header.Source.Dec
     ra  = nc.variables['Header.Source.Ra'][0]  * 57.2957795131
     dec = nc.variables['Header.Source.Dec'][0] * 57.2957795131
-    
-        
+
+    az  = nc.variables['Header.Sky.AzReq'][0]  * 57.2957795131
+    el  = nc.variables['Header.Sky.ElReq'][0] * 57.2957795131
+
+    t = nc.variables['Data.Sky.Time'][:].tolist()
+    tint = t[-1]-t[0] + (t[-1]-t[-2])
+
     nc.close()
 
-    # no rc mode, only one line summary
-    print("%s  %7d  RSR   %-30s  %.6f %.6f" %   (date_obs, obsnum, src, ra, dec))
+    # one line summary
+    print("%-20s %7d  %-5s %-30s     RSR      0    %5.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
 
+#   SLR
+#   print("%-20s %7s  %-5s %-30s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
 
 #  although we grab the command line arguments here, they are actually not
 #  used in the way most scripts use them. Below there is a more hardcoded
@@ -205,10 +222,10 @@ if len(sys.argv) == 2:
                 try:
                     yyyymmdd = f.split('/')[-1].split('_')[1]
                     obsnum   = f.split('/')[-1].split('_')[2]
-                    print("%s          %s   failed on %s" % (yyyymmdd,obsnum,f))
                 except:
-                    print("1900-00-00       failed on %s" % f)
-
+                    yyyymmdd = "1900-00-00"
+                    obsnum   = " "
+                print("%-20s %7s  failed for %s" % (yyyymmdd,obsnum,f))
         sys.exit(0)
     elif os.path.exists(ifproc):
         try:
