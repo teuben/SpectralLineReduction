@@ -5,7 +5,13 @@
 #                This list is both bash and python friendly: we only allow integer/float/string
 #
 #  To run for all the RSR and SLR in Feb 2021 took 9 mins on "cln"
-
+#
+#  Examples of using the online version:
+#      http://187.248.54.232/lmtmc/notes/LmtShiftReportByDate.html
+#      http://187.248.54.232/cgi-bin/lmtmc/mc_sql.cgi?-s=2018-12-15&-e=2018-12-20&-project=&-obsGoal=all&-format=html&-instrument=all
+#
+#  @todo       show with "0123" that a roach/chassis is present. If not, put a * , e.g. "01*3" means roach2 is missing.
+#
 """
 Usage: lmtinfo.py OBSNUM
        lmtinfo.py IFPROCFILE
@@ -19,7 +25,7 @@ This routine grabs some useful summary information from the ifproc file, ignorin
 the roach files. If one unique OBSNUM is given, it will show this information
 in a "rc" style for the pipeline. If more OBSNUM are possible, for example by only
 giving a PATH, all possible OBSNUMs are listed with a short summary, one OBSNUM
-per line. Example of output:
+per line. Example of early output:
 
       #     DATE  OBSNUM   OBSPGM SOURCE      RESTFRQ VLSR INTTIME
       2018-11-16  079447   Cal    IRC+10216   115.271  -20       8
@@ -63,7 +69,9 @@ def slr_summary(ifproc, rc=False):
     src = b''.join(nc.variables['Header.Source.SourceName'][:]).decode().strip()
     skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
     restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
-    bbtime = nc.variables['Data.IfProc.BasebandTime']
+    bbtime = nc.variables['Data.IfProc.BasebandTime'][:]
+    bufpos = nc.variables['Data.TelescopeBackend.BufPos'][:]
+    ubufpos = np.unique(bufpos)
     # Header.Dcs.ObsNum 
     obspgm = b''.join(nc.variables['Header.Dcs.ObsPgm'][:]).decode().strip()
     # the following Map only if obspgm=='Map'
@@ -71,6 +79,10 @@ def slr_summary(ifproc, rc=False):
         xlen = nc.variables['Header.Map.XLength'][0] * 206264.806
         ylen = nc.variables['Header.Map.YLength'][0] * 206264.806
         hpbw = nc.variables['Header.Map.HPBW'][0]
+    else:
+        xlen = 0
+        ylen = 0
+        hpbw = 0
 
     date_obs = nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
     date_obs = datetime.datetime.fromtimestamp(date_obs).strftime('%Y-%m-%dT%H:%M:%S')
@@ -80,10 +92,16 @@ def slr_summary(ifproc, rc=False):
     az  = nc.variables['Header.Sky.AzReq'][0]  * 57.2957795131
     el  = nc.variables['Header.Sky.ElReq'][0] * 57.2957795131
 
-    t0 = float(bbtime[0].data)
-    t1 = float(bbtime[-1].data)
-    t2 = float(bbtime[-2].data)    
-    tint = t1-t0 + (t1-t2)
+    tint = nc.variables['Header.Dcs.IntegrationTime'][0]
+    
+    # Header.Dcs.ProjectId
+    # Header.Dcs.ObsGoal
+    # Header.ScanFile.Valid = 1 ;
+
+    t0 = float(bbtime[0])
+    t1 = float(bbtime[-1])
+    t2 = float(bbtime[-2])
+    tsky = t1-t0 + (t1-t2)
     
     nc.close()
         
@@ -91,8 +109,11 @@ def slr_summary(ifproc, rc=False):
         print('# <lmtinfo>')
         print('# ifproc="%s"' % ifproc)
         print('# date-obs="%s"' % date_obs)
+        print('# skytime=%g sec' % tsky)
         print('# inttime=%g sec' % tint)
         print('# obspgm="%s"' % obspgm)
+        print('# bufpos=%s' % str(ubufpos))
+        print('# HPBW=%g' % hpbw)
         print('vlsr=%g' % vlsr)
         print('skyfreq=%g' % skyfreq)
         print('restfreq=%g' % restfreq)
@@ -100,12 +121,13 @@ def slr_summary(ifproc, rc=False):
         resolution = math.ceil(1.0 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806)
         print('resolution=%g' % resolution)
         print('cell=%g' % (resolution/2.0))
+        # @todo https://github.com/astroumd/lmtoy/issues/9     xlen needs to be equal to ylen
         print('x_extent=%g' % xlen)
         print('y_extent=%g' % ylen)
         
         print("# </lmtinfo>")
     else:    
-        print("%-20s %7s  %-5s %-30s %8.4f %5.f    %5.1f  %10.6f %10.6f  %5.1f %5.1f" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, tint, ra, dec, az, el))
+        print("%-20s %7s  %-5s %-30s %8.4f %5.f    %6.1f  %10.6f %10.6f  %5.1f %5.1f" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, tint, ra, dec, az, el))
 
 #       print("%-20s %7d  %-5s %-30s RSR  0      %5.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
 
@@ -169,7 +191,7 @@ def rsr_summary(rsr_file, rc=False):
     nc.close()
 
     # one line summary
-    print("%-20s %7d  %-5s %-30s     RSR      0    %5.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
+    print("%-20s %7d  %-5s %-30s     RSR      0    %6.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
 
 #   SLR
 #   print("%-20s %7s  %-5s %-30s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
@@ -183,7 +205,7 @@ arguments = docopt(__doc__,options_first=True, version='0.1')
 
 if len(sys.argv) == 2:
 
-    print("# Y-M-D   T H:M:S     ObsNum ObsPgm SourceName                     RestFreq  VLSR   TINT     RA        DEC          AZ    EL")
+    print("# Y-M-D   T H:M:S     ObsNum ObsPgm SourceName                     RestFreq  VLSR   TSKY     RA        DEC          AZ    EL")
     
                                                      # mode 1: obsnum or nc_file or path
     obsnum = sys.argv[1]
