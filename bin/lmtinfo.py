@@ -78,7 +78,7 @@ def slr_summary(ifproc, rc=False):
     if obspgm=='Map':
         xlen = nc.variables['Header.Map.XLength'][0] * 206264.806
         ylen = nc.variables['Header.Map.YLength'][0] * 206264.806
-        hpbw = nc.variables['Header.Map.HPBW'][0]
+        hpbw = nc.variables['Header.Map.HPBW'][0]    * 206264.806
     else:
         xlen = 0
         ylen = 0
@@ -113,17 +113,17 @@ def slr_summary(ifproc, rc=False):
         print('# inttime=%g sec' % tint)
         print('# obspgm="%s"' % obspgm)
         print('# bufpos=%s' % str(ubufpos))
-        print('# HPBW=%g' % hpbw)
-        print('vlsr=%g' % vlsr)
-        print('skyfreq=%g' % skyfreq)
-        print('restfreq=%g' % restfreq)
+        print('# HPBW=%g arcsec' % hpbw)
+        print('vlsr=%g        # km/s' % vlsr)
+        print('skyfreq=%g     # GHz' % skyfreq)
+        print('restfreq=%g    # Ghz' % restfreq)
         print('src="%s"' % src)
         resolution = math.ceil(1.0 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806)
-        print('resolution=%g' % resolution)
-        print('cell=%g' % (resolution/2.0))
+        print('resolution=%g  # arcsec' % resolution)
+        print('cell=%g   # arcsec' % (resolution/2.0))
         # @todo https://github.com/astroumd/lmtoy/issues/9     xlen needs to be equal to ylen
-        print('x_extent=%g' % xlen)
-        print('y_extent=%g' % ylen)
+        print('x_extent=%g   # arcsec' % xlen)
+        print('y_extent=%g   # arcsec' % ylen)
         
         print("# </lmtinfo>")
     else:    
