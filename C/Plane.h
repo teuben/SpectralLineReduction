@@ -7,6 +7,7 @@
 typedef struct
 {
   float *plane;
+  float x_position, y_position;
   float *caxis[2];
   float crval[2], crpix[2], cdelt[2];
   char ctype[2][16];

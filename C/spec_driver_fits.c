@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
-#include "Version.h"     // also defines some common MAXabc parameters
+#include "Version.h"     // also defines some common MAX* parameters
 #include "Cube.h"
 #include "Plane.h"
 #include "ConvolveFunction.h"
@@ -71,6 +71,10 @@ int main(int argc, char *argv[])
   printf("DATE-OBS %s\n",C.date_obs);  
   C.x_position = S.x_position;
   C.y_position = S.y_position;
+  W.x_position = S.x_position;
+  W.y_position = S.y_position;
+  M.x_position = S.x_position;
+  M.y_position = S.y_position;
   // 
   C.restfreq = S.restfreq;
   C.vlsr = S.vlsr;
@@ -153,6 +157,8 @@ int main(int argc, char *argv[])
     printf("%2d ",OTF.use_pixels[i]);
   printf("\n");
 #endif
+
+  //   @todo    sanity check if each spectrum has the same WCS
 
   for(ifile=0;ifile<OTF.nfiles;ifile++)
     {
