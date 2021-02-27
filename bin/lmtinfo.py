@@ -92,6 +92,9 @@ def slr_summary(ifproc, rc=False):
     az  = nc.variables['Header.Sky.AzReq'][0]  * 57.2957795131
     el  = nc.variables['Header.Sky.ElReq'][0] * 57.2957795131
 
+    az1 = nc.variables['Header.Sky.AzOff'][1] * 206264.81
+    el1 = nc.variables['Header.Sky.ElOff'][1] * 206264.81
+
     tint = nc.variables['Header.Dcs.IntegrationTime'][0]
     
     # Header.Dcs.ProjectId
@@ -112,6 +115,7 @@ def slr_summary(ifproc, rc=False):
         print('# skytime=%g sec' % tsky)
         print('# inttime=%g sec' % tint)
         print('# obspgm="%s"' % obspgm)
+        print('# SkyOff=%g %g' % (az1,el1))
         print('# bufpos=%s' % str(ubufpos))
         print('# HPBW=%g arcsec' % hpbw)
         print('vlsr=%g        # km/s' % vlsr)
@@ -127,7 +131,7 @@ def slr_summary(ifproc, rc=False):
         
         print("# </lmtinfo>")
     else:    
-        print("%-20s %7s  %-5s %-30s %8.4f %5.f    %6.1f  %10.6f %10.6f  %5.1f %5.1f" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, tint, ra, dec, az, el))
+        print("%-20s %7s  %-5s %-30s %8.4f %5.f    %6.1f  %10.6f %10.6f  %5.1f %5.1f  %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, tint, ra, dec, az, el, az1,el1))
 
 #       print("%-20s %7d  %-5s %-30s RSR  0      %5.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
 
