@@ -14,7 +14,12 @@ fi
 if [ $# = 0 ]; then
     echo Usage: lmtls PATTERN1 [PATTERN2 ....]
     echo Finds case insensitive matches in the $log
-elif [ $# = 1 ]; then
+    exit 0
+fi
+
+head -1 $log
+    
+if [ $# = 1 ]; then
     grep -i $1 $log
 elif [ $# = 2 ]; then
     grep -i $1 $log | grep -i $2
