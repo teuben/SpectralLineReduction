@@ -27,6 +27,7 @@ in a "rc" style for the pipeline. If more OBSNUM are possible, for example by on
 giving a PATH, all possible OBSNUMs are listed with a short summary, one OBSNUM
 per line. Example of early output:
 
+
       #     DATE  OBSNUM   OBSPGM SOURCE      RESTFRQ VLSR INTTIME
       2018-11-16  079447   Cal    IRC+10216   115.271  -20       8
       2018-11-16  079448   Map    IRC+10216   115.271  -20     686
@@ -209,7 +210,7 @@ arguments = docopt(__doc__,options_first=True, version='0.1')
 
 if len(sys.argv) == 2:
 
-    print("# Y-M-D   T H:M:S     ObsNum ObsPgm SourceName                     RestFreq  VLSR   TSKY     RA        DEC          AZ    EL")
+    print("# Y-M-D   T H:M:S     ObsNum ObsPgm SourceName                     RestFreq  VLSR   TINT     RA        DEC          AZ    EL")
     
                                                      # mode 1: obsnum or nc_file or path
     obsnum = sys.argv[1]
