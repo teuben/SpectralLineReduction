@@ -159,6 +159,7 @@ class RoachSpec():
 
     def compute_tsys_spectra(self, bdrop=100, edrop=100):
         self.tsys_spectra = np.zeros((self.nhots, self.nchan))
+        print("otf_cal used with nhots=%d" % self.nhots)
         for ihot in range(self.nhots):
             hot_spectrum = np.median(self.raw_spec[self.hot_ranges[ihot][0]:self.hot_ranges[ihot][1], :], axis=0)
             sky_spectrum = np.median(self.raw_spec[self.sky_ranges[ihot][0]:self.sky_ranges[ihot][1], :], axis=0)
