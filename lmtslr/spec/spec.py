@@ -69,6 +69,19 @@ class RoachSpec():
         self.hots, self.hot_ranges, self.nhots = self.get_ranges(3)
         self.skys, self.sky_ranges, self.nskys = self.get_ranges(2)
 
+        if False:
+            # some debugging on times when bufpos changed and how many
+            nt = len(spec_time)
+            print("RoachSpec: %d %d - %d %d %d %d" % (roach_id,nt,self.nons,self.nrefs,self.nskys,self.nhots))
+            time0 = spec_time[0]
+            print("TB",0,time0,bufpos[0],"first")
+            for i in range(1,nt):
+                if bufpos[i] != bufpos[i-1]:
+                    print("TB",i,spec_time[i]-time0,bufpos[i])
+            i = nt-1
+            print("TB",i,spec_time[i]-time0,bufpos[i],"last")
+            
+
     def get_ranges(self, value=1):
         """
         Searches bufpos and finds indices with values corresponding to 
@@ -81,7 +94,7 @@ class RoachSpec():
                          3 is hot
         Returns:
             (idx (list), ranges (list), len(ranges) (int)): idx is the 
-                indices, ranges is the list of , len(ranges) is the 
+                indices, ranges is the list of (begin,end), len(ranges) is the 
                 length of ranges.
         """
         if value == 0:
@@ -158,21 +171,29 @@ class RoachSpec():
         self.main_spectrum = np.mean(self.raw_spec[self.ons, :], axis=0)
 
     def compute_tsys_spectra(self, bdrop=100, edrop=100):
+        """
+        Computes the TSYS, typically for an otf_cal=1
+        """
         self.tsys_spectra = np.zeros((self.nhots, self.nchan))
-        print("otf_cal used with nhots=%d" % self.nhots)
+        tsys = np.zeros(self.nhots)
         for ihot in range(self.nhots):
             hot_spectrum = np.median(self.raw_spec[self.hot_ranges[ihot][0]:self.hot_ranges[ihot][1], :], axis=0)
             sky_spectrum = np.median(self.raw_spec[self.sky_ranges[ihot][0]:self.sky_ranges[ihot][1], :], axis=0)
+            # @todo why 280, and not a measured ambient?            
             tsys_spec = 280.0 * sky_spectrum/(hot_spectrum - sky_spectrum)
             # find the index where tsys_spec is finite
             indx_fin = np.where(np.isfinite(tsys_spec))
             # compute tsys as mean of tsys_spec
-            tsys = np.mean(tsys_spec[indx_fin][bdrop:self.nchan-edrop])
+            tsys[ihot] = np.mean(tsys_spec[indx_fin][bdrop:self.nchan-edrop])
             # find index where tsys_spec is infinte
             indx_inf = np.where(np.isinf(tsys_spec))
             # replace with mean
-            tsys_spec[indx_inf] = tsys
+            tsys_spec[indx_inf] = tsys[ihot]
             self.tsys_spectra[ihot, :] = tsys_spec
+        # can we use pixel= this way?
+        pixel = 4*self.roach_id + self.roach_input
+        print("TSYS[%d] otf_cal %s" % (pixel,repr(tsys)))
+            
         
     def get_nearest_reference(self, index, left=True):
         """
@@ -186,13 +207,25 @@ class RoachSpec():
             arr = [abs(index-r[0]) for r in self.ref_ranges]
             return arr.index(min(arr))            
 
-    def get_previous_hot(self, index):
+    def get_previous_hot(self, index, nearest=False):
         """
         Given a dump index finds the previous HOT
         and returns the correct hot index
+        
+        Using nearest=True an older version of the code
+        where "accidentally?" the nearest was used, can be returned.
         """
-        arr = [abs(index-r[1]) for r in self.hot_ranges]
-        return arr.index(min(arr))
+        if nearest:
+            # nearest_hot (original code, arguably wrong)
+            arr = [abs(index-r[1]) for r in self.hot_ranges]
+            return arr.index(min(arr))
+        else:            
+            # true previous_hot (after Heyer)
+            arr = [(index-r[1]) for r in self.hot_ranges]
+            arr=np.array(arr)
+            idx=np.where(arr > 0)
+            return np.argmin(arr[idx])
+
     
     def reduce_on_spectrum(self, calibrate=False, tsys_spectrum=0,
                            tsys_no_cal=1):
@@ -341,6 +374,7 @@ class RoachSpec():
                     stop_ref_bin = self.get_nearest_reference(istop+1, left=False)
                     if use_otf_cal:
                         tsys_bin = self.get_previous_hot(istart-1)
+                        # print("OTF_CAL %d %d %d %d %d -> %d" % (ibin,istart,istop,start_ref_bin,stop_ref_bin,tsys_bin))
                     for i in range(istart, istop + 1):
                         ref = (self.reference_spectra[start_ref_bin] + 
                                self.reference_spectra[stop_ref_bin]) / 2
@@ -500,7 +534,8 @@ class RoachSpec():
         """
         if ((self.nhots>0) and (self.nskys>0)):
             hot_spectrum = np.median(self.raw_spec[self.hots,:], axis=0)
-            sky_spectrum = np.median(self.raw_spec[self.skys, :],  axis=0)
+            sky_spectrum = np.median(self.raw_spec[self.skys,:], axis=0)
+            # @todo why 280, and not a measured ambient?
             self.tsys_spectrum = 280 * sky_spectrum / (hot_spectrum - 
                                                        sky_spectrum)
             # find the index where tsys_spectrum in finite
@@ -512,6 +547,9 @@ class RoachSpec():
             indx_inf = np.where(np.isinf(self.tsys_spectrum))
             # replace infinite tsys_spectrum with the mean
             self.tsys_spectrum[indx_inf] = self.tsys
+            # can we use pixel= this way?
+            pixel = 4*self.roach_id + self.roach_input
+            print("TSYS[%d] cal = %g" % (pixel,self.tsys))
         else:
             print('ObsNum %d Roach %d does not have calibration data'%(
                 self.obsnum, self.roach_id))
