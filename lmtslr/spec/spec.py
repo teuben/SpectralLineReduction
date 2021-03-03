@@ -541,15 +541,15 @@ class RoachSpec():
             # find the index where tsys_spectrum in finite
             indx_fin = np.where(np.isfinite(self.tsys_spectrum))
             # compute tsys as the mean of finite tsys_spectrum
-            self.tsys = np.mean(self.tsys_spectrum[indx_fin][bdrop:self.nchan 
-                                                             - edrop])
+            self.tsys = np.mean(self.tsys_spectrum[indx_fin][bdrop:self.nchan - edrop])
+            tsysstd = np.std(self.tsys_spectrum[indx_fin][bdrop:self.nchan - edrop])
             # find the index where tsys_spectrum in infinite
             indx_inf = np.where(np.isinf(self.tsys_spectrum))
             # replace infinite tsys_spectrum with the mean
             self.tsys_spectrum[indx_inf] = self.tsys
             # can we use pixel= this way?
             pixel = 4*self.roach_id + self.roach_input
-            print("TSYS[%d] cal = %g" % (pixel,self.tsys))
+            print("TSYS[%d] cal = %g +/- %g" % (pixel,self.tsys, tsysstd))
         else:
             print('ObsNum %d Roach %d does not have calibration data'%(
                 self.obsnum, self.roach_id))
