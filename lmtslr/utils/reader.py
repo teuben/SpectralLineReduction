@@ -9,9 +9,25 @@ from lmtslr.utils.roach_file_utils import create_roach_list, \
 from lmtslr.utils.ifproc_file_utils import lookup_ifproc_file
 import netCDF4
 
+def get_data_lmt(path):
+    """  get a more sensible root path for DATA_LMT
+         1) if path is given, return that
+         2) if $DATA_LMT is present, return that
+         3) return the LMT default '/data_lmt'
+    """
+    if path != None:
+        return path
+    else:
+        if 'DATA_LMT' in os.environ:
+            return os.environ['DATA_LMT']
+        else:
+            return '/data_lmt'
+    return None
+           
+
 def read_obsnum_ps(obsnum, list_of_pixels, bank, use_calibration,
-                   tsys=150., stype=2,
-                   path='/data_lmt/'):
+                   tsys=150., stype=2, 
+                   path=None):
     """
     Reads the spectral line data from WARES spectrometer for a 
     particular obsnum.
@@ -30,12 +46,13 @@ def read_obsnum_ps(obsnum, list_of_pixels, bank, use_calibration,
         tsys (float): system temperature to use of use_calibration is 
             False
         path (str): path to the top of the data_lmt directory (usually 
-            '/data_lmt/')
+            '/data_lmt/', or use $DATA_LMT)
     Returns:
         ifproc (obj): ifproc_data object with IF Processor parameters
         specbank (obj): spec_bank_data object with the actual spectral 
             data
     """
+    path = get_data_lmt(path)
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
     files, nfiles = lookup_roach_files(obsnum, roach_list,
@@ -81,7 +98,7 @@ def read_obsnum_ps(obsnum, list_of_pixels, bank, use_calibration,
     return ifproc, specbank
 
 def read_obsnum_bs(obsnum, list_of_pixels, bank,
-                   use_calibration, tsys=150., stype=2, path='/data_lmt/'):
+                   use_calibration, tsys=150., stype=2, path=None):
     """
     Reads the spectral line data from WARES spectrometer for a 
     particular obsnum.
@@ -101,12 +118,13 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
         tsys (float): system temperature to use of use_calibration is 
             False
         path (str): path to the top of the data_lmt directory (usually 
-            '/data_lmt/')
+            '/data_lmt/',  or use $DATA_LMT)
     Returns:
         ifproc (obj): ifproc_data object with IF Processor parameters
         specbank (obj): spec_bank_data object with the actual spectral 
             data
     """
+    path = get_data_lmt(path)
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
     files, nfiles = lookup_roach_files(obsnum, roach_list,
@@ -151,8 +169,8 @@ def read_obsnum_bs(obsnum, list_of_pixels, bank,
 
 def read_obsnum_otf(obsnum, list_of_pixels, bank,
                     use_calibration, tsys=150., stype=1,
-                    use_otf_cal=False,
-                    path='/data_lmt/'):
+                    use_otf_cal=False, save_tsys=False,
+                    path=None):
     """
     Reads the spectral line data from WARES spectrometer for a 
     particular obsnum.
@@ -170,13 +188,15 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
             False just multiplies by system temperature
         tsys (float): system temperature to use of use_calibration is 
             False
+        stype (int):
+        use_otf_cal (bool):  (also use?) if CAL is embedded in observation
         path (str): path to the top of the data_lmt directory (usually 
-            '/data_lmt/')
+            '/data_lmt/',  or use $DATA_LMT)
     Returns:
         ifproc (obj): ifproc_data object with IF Processor parameters
-        specbank (obj) (obj): spec_bank_data object with the actual spectral 
-            data
+        specbank (obj): spec_bank_data object with the actual spectral data
     """
+    path = get_data_lmt(path)    
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
     files, nfiles = lookup_roach_files(obsnum, roach_list,
@@ -192,7 +212,7 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
     # create the spec_bank object.  This reads all the roaches in the \
     # list "files"
     specbank = SpecBankData(files, ifproc,
-                            pixel_list=list_of_pixels, bank=bank)
+                            pixel_list=list_of_pixels, bank=bank, save_tsys=save_tsys)
 
     print("RESTFREQ %g GHz" % specbank.line_rest_frequency)
 
@@ -214,6 +234,10 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
                                                 tsys_spectrum=specbank_cal.roach[ipix].tsys_spectrum,
                                                 use_otf_cal=use_otf_cal
             )
+            # keep the TSYS
+            if save_tsys:
+                specbank.roach[ipix].tsyscal = specbank_cal.roach[ipix].tsys_spectrum
+            
     else:
         # reduce all spectra - uncalibrated
         for ipix in range(specbank.npix):
@@ -225,7 +249,7 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
 
 def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
                                  list_of_pixels, bank, use_calibration, 
-                                 tsys=150., stype=1, path='/data_lmt/'):
+                                 tsys=150., stype=1, path=None):
     """
     Reads the spectral line data from WARES spectrometer for a 
     particular obsnum.
@@ -247,11 +271,12 @@ def read_obsnum_otf_multiprocess(ifproc, ifproc_cal, obsnum,
         tsys (float): system temperature to use of use_calibration is 
             False
         path (str): path to the top of the data_lmt directory (usually 
-            '/data_lmt/')
+            '/data_lmt/',  or use $DATA_LMT)
     Returns:
         I (obj): ifproc_data object with IF Processor parameters
         S (obj): spec_bank_data object with the actual spectral data
     """
+    path = get_data_lmt(path)    
     # look up files to match pixel list
     roach_list = create_roach_list(list_of_pixels)
     files, nfiles = lookup_roach_files(obsnum, roach_list, 
