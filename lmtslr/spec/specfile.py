@@ -2,8 +2,8 @@
 A class for intermediate Spectrometer Files
 
 classes: SpecFile
-author: GN
-date: Feb 2020
+author:  GN
+date:    Feb 2020
 """
 
 import os
@@ -19,7 +19,7 @@ from lmtslr.grid.grid import Grid
 
 class SpecFile():
     def __init__(self, ifproc, specbank, pix_list):
-        self.version = "10-jan-2021"     # modify this if anything in the output SpecFile has been changed
+        self.version = "5-mar-2021"     # modify this if anything in the output SpecFile has been changed
         self.ifproc = ifproc
         self.specbank = specbank
         self.pix_list = pix_list
@@ -54,6 +54,7 @@ class SpecFile():
         else:
             self.nchan_to_save = self.specbank.nchan
             self.L = LD.vslice(-10000, 10000) # extreme limits to include whole spectrum
+            # @todo   a wrong VLSR/RESTFREQ could cause this not to work
         vmin = self.specbank.c2v(self.specbank.nchan-1)
         vmax = self.specbank.c2v(0)
         print("Spectral Band velocity range: %g  %g km/s" % (vmin,vmax))
@@ -74,12 +75,13 @@ class SpecFile():
         # history is long... why is netcdf so irrationally complicated to handle strings
         nc_dimension_nhist = self.ncout.createDimension('nhist', 512)
 
+        # number of pixels in this NC
+        nc_dimension_npix = self.ncout.createDimension('npix', len(self.pix_list))
+
     def _create_nc_header(self):
         # a version header
         nc_version = self.ncout.createVariable('Header.Version', 'c', ('nlabel',))
         nc_version[0:len(self.version)] = self.version
-        print("LEN",len(self.version))
-        print("LEN",len(self.history))
 
         # history how the SpecFile was created
         nc_history = self.ncout.createVariable('Header.History', 'c', ('nhist',))
@@ -137,6 +139,8 @@ class SpecFile():
         nc_rms.units = 'K'
         nc_data = self.ncout.createVariable('Data.Spectra', 'f4', ('nspec','nchan'))
         nc_data.units = 'K'
+        nc_tsys = self.ncout.createVariable('Data.Tsys', 'f4', ('npix','nchan'))
+        nc_tsys.units = 'K'
 
         count = 0
        
@@ -158,9 +162,17 @@ class SpecFile():
                                       self.ifproc.tracking_beam)
             for j in range(n_spectra):
                 # process each spectrum
+                if j==0:
+                    # tsyscal is allowed to be None, in which case it's never written
+                    # but since they don't change, only on the first spectrum for this pixel it's needed
+                    tsys = self.specbank.roach[i].tsyscal
+                else:
+                    tsys = None
+                
                 L = LineData(self.ifproc, self.specbank.bank,
                              self.specbank.nchan, self.specbank.bandwidth,
-                             self.specbank.roach[i].reduced_spectra[j])
+                             self.specbank.roach[i].reduced_spectra[j],
+                             tsys)
                 LL = L.vslice(self.vslice[0], self.vslice[1])
                 LL.eliminate(self.eliminate_list)
                 bbase, nbase = LL.xlist(self.b_regions)
@@ -168,6 +180,9 @@ class SpecFile():
 
                 # write the reduced line into the NetCDF file
                 nc_data[count,:] = LL.yarray
+                if type(LL.tarray) == np.ndarray:
+                    idx = self.pix_list.index(ipix)
+                    nc_tsys[idx,:] = LL.tarray
                 nc_rms[count] = LL.rms
                 nc_pix[count] = ipix
                 nc_seq[count] = j
