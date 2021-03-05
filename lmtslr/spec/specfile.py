@@ -183,6 +183,8 @@ class SpecFile():
                 if type(LL.tarray) == np.ndarray:
                     idx = self.pix_list.index(ipix)
                     nc_tsys[idx,:] = LL.tarray
+                    t = LL.tarray
+                    print("TSYS[%d] slice: %g (%g)  minmax: %g %g" % (ipix,t.mean(),t.std(),t.min(),t.max()))
                 nc_rms[count] = LL.rms
                 nc_pix[count] = ipix
                 nc_seq[count] = j
