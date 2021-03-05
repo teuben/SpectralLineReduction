@@ -3,10 +3,10 @@ Module to read a set of spectra from the spectrometer
 
 classes: RoachSpec, SpecBank, SpecBankData, SpecBankCal
 methods: lookup_roach_files, find_roach_from_pixel, create_roach_list
-uses: IFProc, Grid
-author: FPS
-date: May 2018
-changes:
+uses:    IFProc, Grid
+author:  FPS
+date:    May 2018
+changes:  
 python 3
 """
 import numpy as np
@@ -63,11 +63,13 @@ class RoachSpec():
         self.ymap = ymap
         self.pmap = pmap
         self.bufpos = bufpos
+        self.tsys_aver = False
+        self.tsyscal = None
 
+        self.ons,  self.on_ranges,  self.nons  = self.get_ranges(0)
         self.refs, self.ref_ranges, self.nrefs = self.get_ranges(1)
-        self.ons, self.on_ranges, self.nons = self.get_ranges(0)
-        self.hots, self.hot_ranges, self.nhots = self.get_ranges(3)
         self.skys, self.sky_ranges, self.nskys = self.get_ranges(2)
+        self.hots, self.hot_ranges, self.nhots = self.get_ranges(3)
 
         if False:
             # some debugging on times when bufpos changed and how many
@@ -189,7 +191,11 @@ class RoachSpec():
             indx_inf = np.where(np.isinf(tsys_spec))
             # replace with mean
             tsys_spec[indx_inf] = tsys[ihot]
-            self.tsys_spectra[ihot, :] = tsys_spec
+            if self.tsys_aver:
+                self.tsys_spectra[ihot, :] = tsys[ihot]
+            else:
+                self.tsys_spectra[ihot, :] = tsys_spec
+            #print("TSYS: ",self.tsys_spectra[ihot, :],tsys[ihot])
         # can we use pixel= this way?
         pixel = 4*self.roach_id + self.roach_input
         print("TSYS[%d] otf_cal %s" % (pixel,repr(tsys)))
@@ -547,7 +553,11 @@ class RoachSpec():
             indx_inf = np.where(np.isinf(self.tsys_spectrum))
             # replace infinite tsys_spectrum with the mean
             self.tsys_spectrum[indx_inf] = self.tsys
-            # can we use pixel= this way?
+            if self.tsys_aver:
+                self.tsys_spectrum[:] = self.tsys
+                
+            #print("TSYS: ",self.tsys_spectrum[:])
+            # @todo can we use pixel= this way?
             pixel = 4*self.roach_id + self.roach_input
             print("TSYS[%d] cal = %g +/- %g" % (pixel,self.tsys, tsysstd))
         else:
@@ -641,7 +651,7 @@ class SpecBank():
                  pixel_list=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 
                  time_offset=[-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,
                               -0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03], 
-                 bank=0):
+                 bank=0, save_tsys=False):
         """
         Constructor for SpecBank class.
         Args: 
@@ -720,6 +730,7 @@ class SpecBank():
                     * np.float64(2.99792458e5)
 
         self.cal_flag = False
+        self.save_tsys = save_tsys
         
         # define the windows for line integrations and baseline fits
         self.nc = 0
@@ -980,7 +991,7 @@ class SpecBankData(SpecBank):
                  pixel_list=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
                  time_offset=[-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,
                               -0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03,-0.03],
-                 bank=0):
+                 bank=0, save_tsys=False):
         """
         Constructor for SpecBankData class.
         Args:
@@ -995,7 +1006,7 @@ class SpecBankData(SpecBank):
         """
         SpecBank.__init__(self, roach_files, ifproc_data, 
                           pixel_list=pixel_list, time_offset=time_offset, 
-                          bank=bank)
+                          bank=bank, save_tsys=save_tsys)
     
     def create_map_data(self, channel_list, n_channel_list, baseline_list, 
                         n_baseline_list, baseline_order=0, 
