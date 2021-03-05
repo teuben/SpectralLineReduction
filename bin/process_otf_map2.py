@@ -11,6 +11,7 @@
 --use_cal                          Use Calibration scan
 --tsys TSYS                        If use_cal is False, value of Tsys to use [default: 250.0] ** not used **
 --use_otf_cal                      Use calibration within OTF scan (default: False)
+--save_tsys                        Should tsys (from CAL) be saved in specfile?
 --stype STYPE                      type of spectral line reduction;
                                    0 - median; 1 - single ref spectra; 2 - bracketed ref [Default: 2]
 --x_axis X_AXIS                    select spectral x axis.
@@ -43,6 +44,7 @@ import os
 import numpy as np		
 import matplotlib.pyplot as pl
 import netCDF4
+#from pypapi import events, papi_high as high
 
 # command line parsing
 from docopt import docopt
@@ -74,14 +76,13 @@ def main(argv):
     for arg in sys.argv[1:]:
         history = history + " " + arg
         
-    #print(time.time(), time.clock())
     Opts = HandleOTFProcessOptions()
     Opts.parse_options(argv, 'process_otf_map', 1, True)
-
+    save_tsys = True     # until it's a real option
+    
     # check to see whether output file exists and remove it if it does
     if os.path.isfile(Opts.output_file_name) == True:
         os.remove(Opts.output_file_name) 
-
 
     I, S = read_obsnum_otf(Opts.obsnum,
                            Opts.pix_list,
@@ -90,6 +91,7 @@ def main(argv):
                            tsys=Opts.tsys,
                            stype=Opts.stype,
                            use_otf_cal=Opts.use_otf_cal,
+                           save_tsys=save_tsys,
                            path=Opts.data_path)
 
     specfile = SpecFile(I, S, Opts.pix_list)
@@ -102,8 +104,7 @@ def main(argv):
     specfile.open_output_netcdf(Opts.output_file_name)
     specfile.write_ncdata()
     
-    print('netCDF %s Done'%(Opts.output_file_name))
-    #print(time.time(), time.clock())
+    print('Written %s'% Opts.output_file_name)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
