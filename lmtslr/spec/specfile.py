@@ -19,7 +19,7 @@ from lmtslr.grid.grid import Grid
 
 class SpecFile():
     def __init__(self, ifproc, specbank, pix_list):
-        self.version = "5-mar-2021"     # modify this if anything in the output SpecFile has been changed
+        self.version = "6-mar-2021"     # modify this if anything in the output SpecFile has been changed
         self.ifproc = ifproc
         self.specbank = specbank
         self.pix_list = pix_list
@@ -77,6 +77,9 @@ class SpecFile():
 
         # number of pixels in this NC
         nc_dimension_npix = self.ncout.createDimension('npix', len(self.pix_list))
+
+        # number of tsyscals
+        nc_dimension_ncal = self.ncout.createDimension('ncal', self.specbank.ncal)
 
     def _create_nc_header(self):
         # a version header
@@ -139,14 +142,19 @@ class SpecFile():
         nc_rms.units = 'K'
         nc_data = self.ncout.createVariable('Data.Spectra', 'f4', ('nspec','nchan'))
         nc_data.units = 'K'
-        nc_tsys = self.ncout.createVariable('Data.Tsys', 'f4', ('npix','nchan'))
+        nc_tsys = self.ncout.createVariable('Data.Tsys', 'f4', ('ncal','npix','nchan'))
         nc_tsys.units = 'K'
+        
 
         count = 0
-       
+        ncal = self.specbank.ncal
+        
         print("Looping over pixel list %s: " % str(self.pix_list))
+        print("Processing %d CAL's" % ncal)
         print("Pix Nspec  Mean Std    MAD_std Min  Max      <RMS> RMS_max    Warnings")
 
+
+        # @todo ensure the pix_list is sorted
         for ipix in self.pix_list:
             count0 = count
             i = self.specbank.find_pixel_index(ipix)
@@ -162,10 +170,16 @@ class SpecFile():
                                       self.ifproc.tracking_beam)
             for j in range(n_spectra):
                 # process each spectrum
-                if j==0:
+                if j < ncal:
                     # tsyscal is allowed to be None, in which case it's never written
                     # but since they don't change, only on the first spectrum for this pixel it's needed
-                    tsys = self.specbank.roach[i].tsyscal
+                    ### S.roach[0].tsys_spectra
+                    if ncal > 1:
+                        tsys = self.specbank.roach[i].tsys_spectra[j]
+                    elif ncal == 1:
+                        tsys = self.specbank.roach[i].tsyscal
+                    else:
+                        tsys = None
                 else:
                     tsys = None
                 
@@ -180,9 +194,11 @@ class SpecFile():
 
                 # write the reduced line into the NetCDF file
                 nc_data[count,:] = LL.yarray
+
+                # tricked: only the first ncal tsys are for real 
                 if type(LL.tarray) == np.ndarray:
                     idx = self.pix_list.index(ipix)
-                    nc_tsys[idx,:] = LL.tarray
+                    nc_tsys[j,idx,:] = LL.tarray
                     t = LL.tarray
                     print("TSYS[%d] slice: %g (%g)  minmax: %g %g" % (ipix,t.mean(),t.std(),t.min(),t.max()))
                 nc_rms[count] = LL.rms
