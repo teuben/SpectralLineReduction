@@ -209,8 +209,7 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
     ifproc_cal = IFProcCal(ifproc_cal_file)
     ifproc_cal.compute_tsys()
 
-    # create the spec_bank object.  This reads all the roaches in the \
-    # list "files"
+    # create the spec_bank object.  This reads all the roaches in the list "files"
     specbank = SpecBankData(files, ifproc,
                             pixel_list=list_of_pixels, bank=bank, save_tsys=save_tsys)
 
@@ -234,15 +233,23 @@ def read_obsnum_otf(obsnum, list_of_pixels, bank,
                                                 tsys_spectrum=specbank_cal.roach[ipix].tsys_spectrum,
                                                 use_otf_cal=use_otf_cal
             )
+            ncal = specbank.roach[ipix].nhots
             # keep the TSYS
             if save_tsys:
+                # specbank.roach[ipix].ncal = 1
                 specbank.roach[ipix].tsyscal = specbank_cal.roach[ipix].tsys_spectrum
+
+        if use_otf_cal:
+            specbank.ncal = ncal
+        else:
+            specbank.ncal = 1
             
     else:
         # reduce all spectra - uncalibrated
         for ipix in range(specbank.npix):
             specbank.roach[ipix].reduce_spectra(stype=stype, calibrate=False, 
                 tsys_no_cal=ifproc_cal.tsys[list_of_pixels[ipix]])
+        specbank.ncal = 0
 
     return ifproc, specbank
 
