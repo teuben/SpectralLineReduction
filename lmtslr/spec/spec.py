@@ -65,6 +65,7 @@ class RoachSpec():
         self.bufpos = bufpos
         self.tsys_aver = False
         self.tsyscal = None
+        self.ncal = 0
 
         self.ons,  self.on_ranges,  self.nons  = self.get_ranges(0)
         self.refs, self.ref_ranges, self.nrefs = self.get_ranges(1)
@@ -347,6 +348,7 @@ class RoachSpec():
 
         if use_otf_cal:
             self.compute_tsys_spectra()
+            
         if stype == 0:
             self.compute_median_spectrum()
             for i in self.ons:
