@@ -40,7 +40,13 @@ class SpecFileViewer():
         self.ypos = nc.variables['Data.YPos'][:]
         self.rms = nc.variables['Data.RMS'][:]
         self.data = nc.variables['Data.Spectra'][:]
-        
+        try:
+            # version 6-mar-2021 and beyond
+            self.have_tsys = True
+            self.tsys = nc.variables['Data.Tsys'][:]
+        except:
+            self.have_tsys = True            
+
         nc.close()
 
     def sequoia_waterfall_plot(self, pixel_list, rms_cut, plot_range=[-1,1], 
@@ -55,6 +61,7 @@ class SpecFileViewer():
         Returns:
             none
         """
+        Plots.figure()
         fig1, ax1 = pl.subplots(4, 4, sharex='col', sharey='row', 
                                 gridspec_kw={'hspace': 0, 'wspace': 0}, 
                                 figsize=(figsize, figsize))
@@ -70,6 +77,7 @@ class SpecFileViewer():
             ax1[np.mod(the_pixel, 4), the_pixel // 4].text(0.05 * len(rindex),
                 self.caxis[0] + 0.85 * (self.caxis[-1] - self.caxis[0]), 
                 '%d'%(the_pixel))
+        Plots.savefig()
 
     def pixel_waterfall_plot(self, the_pixel, rms_cut, plot_range=[-1,1]):
         """
@@ -82,7 +90,7 @@ class SpecFileViewer():
         Returns:
             none
         """
-        pl.figure()
+        Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
         rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.imshow(self.data[pindex[rindex]].transpose(), origin='lower', 
@@ -92,6 +100,7 @@ class SpecFileViewer():
         pl.ylabel(self.ctype)
         pl.xlabel('Sample')
         pl.colorbar()
+        Plots.savefig()
 
     def sequoia_rms_plot(self, pixel_list, rms_cut, plot_range=[0,10], 
                          figsize=8):
@@ -105,6 +114,7 @@ class SpecFileViewer():
         Returns:
             none
         """
+        Plots.figure()
         fig2, ax2 = pl.subplots(4, 4, sharex='col', sharey='row', 
                                 gridspec_kw={'hspace': 0, 'wspace': 0}, 
                                 figsize=(figsize,figsize))
@@ -118,6 +128,7 @@ class SpecFileViewer():
                 self.rms[pindex[rindex]], 'k.')
             #ax2[np.mod(the_pixel,4), the_pixel//4].text(0.05*len(rindex),plot_range[0] + 0.9*(plot_range[-1]-plot_range[0]), '%d'%(the_pixel))
             #ax2[np.mod(the_pixel,4), the_pixel//4].ylim(plot_range)
+        Plots.savefig()
 
     def pixel_rms_plot(self, the_pixel, rms_cut, plot_range=[0,10]):
         """
@@ -130,7 +141,7 @@ class SpecFileViewer():
         Returns:
             none
         """
-        pl.figure()
+        Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
         rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.plot(self.rms[pindex[rindex]], 'k.')
@@ -138,6 +149,7 @@ class SpecFileViewer():
         pl.ylabel('RMS')
         pl.xlabel('Sample')
         pl.title('PIXEL: %d'%(the_pixel))
+        Plots.savefig()
         
     def xy_position_plot(self, all=True):
         """
@@ -147,16 +159,17 @@ class SpecFileViewer():
         Returns:
             none
         """
+        Plots.figure()
         s0 = 0
         s1 = max(self.sequence)+1
         print("Max sequence=%d" % s1)
-        pl.figure()
         if all:
             pl.plot(self.xpos,self.ypos, 'k.')
         else:
             pl.plot(self.xpos[s0:s1],self.ypos[s0:s1], 'k.')
         pl.xlabel('X')
         pl.ylabel('Y')
+        Plots.savefig()        
 
     def sx_position_plot(self, all=True):
         """
@@ -166,15 +179,16 @@ class SpecFileViewer():
         Returns:
             none
         """
+        Plots.figure()
         s0 = 0
         s1 = max(self.sequence)+1
-        pl.figure()
         if all:
             pl.plot(self.sequence,self.xpos, 'k.')
         else:
             pl.plot(self.sequence[s0:s1],self.xpos[s0:s1], 'k.')
         pl.xlabel('Sequence')
         pl.ylabel('X')
+        Plots.savefig()        
 
     def sy_position_plot(self, all=True):
         """
@@ -184,15 +198,16 @@ class SpecFileViewer():
         Returns:
             none
         """
+        Plots.figure()
         s0 = 0
         s1 = max(self.sequence)+1
-        pl.figure()
         if all:
             pl.plot(self.sequence,self.ypos, 'k.')
         else:
             pl.plot(self.sequence[s0:s1],self.ypos[s0:s1], 'k.')
         pl.xlabel('Sequence')
         pl.ylabel('Y')
+        Plots.savefig()        
         
     def sequoia_rms_histogram(self, pixel_list, rms_cut, figsize=8):
         """
@@ -204,6 +219,7 @@ class SpecFileViewer():
         Returns:
             none
         """
+        Plots.figure()
         fig3, ax3 = pl.subplots(4, 4, sharex='col', sharey='row', 
             gridspec_kw={'hspace': 0, 'wspace': 0}, figsize=(figsize,figsize))
         fig3.text(0.5, -0.1, 'RMS', ha='center')
@@ -212,6 +228,7 @@ class SpecFileViewer():
             rindex = np.where(self.rms[pindex] < rms_cut)[0]
             ax3[np.mod(the_pixel, 4), the_pixel // 4].hist(
                 self.rms[pindex[rindex]], bins=np.arange(0,3.02,.02))
+        Plots.savefig()
 
     def pixel_rms_histogram(self, the_pixel, rms_cut):
         """
@@ -223,14 +240,64 @@ class SpecFileViewer():
         Returns:
             none
         """
-        pl.figure()
+        Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
         rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.hist(self.rms[pindex[rindex]],bins = np.arange(0,3.02,.02))
         pl.xlabel('RMS')
         pl.ylabel('N')
         pl.title('PIXEL: %d'%(the_pixel))
+        Plots.savefig()        
         
+    def sequoia_tsys_spectra_plot(self, pixel_list, figsize=8):
+        """
+        Makes mean spectra plot of spectra from pixels in pixel_list.
+        Args:
+            pixel_list (list): list of pixel IDs to plot
+            rms_cut (float): rms cutoff value for plot
+            figsize (float): size of figure in inches (default is 8)
+        Returns:
+            none
+        """
+        if not self.have_tsys: return
+        print("NEW TSYS PIC")
+        Plots.figure()
+        fig4, ax4 = pl.subplots(4, 4, sharex='col', sharey='row', 
+            gridspec_kw={'hspace': 0, 'wspace': 0}, figsize=(figsize,figsize))
+        fig4.text(0.5, -0.1, self.ctype, ha='center')
+        idx = 0
+        (ncal,npix,nchan) = self.tsys.shape
+        print("SHAPE", self.tsys.shape)
+        for the_pixel in pixel_list:
+            pindex = np.where(self.pixel == the_pixel)[0]
+            print("PIXEL: ",the_pixel, pindex)
+            if len(pindex) == 0: continue
+            for ical in range(ncal):
+                ax4[np.mod(the_pixel, 4), the_pixel // 4].plot(self.caxis,self.tsys[ical][idx])
+            idx = idx + 1
+        Plots.savefig()
+
+    def pixel_tsys_spectrum_plot(self, the_pixel):
+        """
+        Makes mean spectra plot of spectra from pixel the_pixel.
+        Args:
+            the_pixel (int): pixel ID to plot
+            rms_cut (float): rms cutoff value for plot
+            figsize (float): size of figure in inches (default is 8)
+        Returns:
+            none
+        """
+        if not self.have_tsys: return
+        print("NEW TSYS PIC")        
+        Plots.figure()
+        pindex = np.where(self.pixel == the_pixel)[0]
+        rindex = np.where(self.rms[pindex] < rms_cut)[0]
+        pl.plot(self.caxis, self.tsys[the_pixel])
+        pl.xlabel(self.ctype)
+        pl.ylabel('Tsys')
+        pl.title('PIXEL: %d'%(the_pixel))
+        Plots.savefig()                
+
     def sequoia_mean_spectra_plot(self, pixel_list, rms_cut, figsize=8):
         """
         Makes mean spectra plot of spectra from pixels in pixel_list.
@@ -241,6 +308,7 @@ class SpecFileViewer():
         Returns:
             none
         """
+        Plots.figure()
         fig4, ax4 = pl.subplots(4, 4, sharex='col', sharey='row', 
             gridspec_kw={'hspace': 0, 'wspace': 0}, figsize=(figsize,figsize))
         fig4.text(0.5, -0.1, self.ctype, ha='center')
@@ -249,7 +317,7 @@ class SpecFileViewer():
             rindex = np.where(self.rms[pindex] < rms_cut)[0]
             ax4[np.mod(the_pixel, 4), the_pixel // 4].plot(self.caxis, 
                 np.mean(self.data[pindex[rindex]], axis=0))
- 
+        Plots.savefig()
 
     def pixel_mean_spectrum_plot(self, the_pixel, rms_cut):
         """
@@ -261,33 +329,15 @@ class SpecFileViewer():
         Returns:
             none
         """
-        pl.figure()
+        Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
         rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.plot(self.caxis, np.mean(self.data[pindex[rindex]], axis=0))
         pl.xlabel(self.ctype)
         pl.ylabel('TA*')
         pl.title('PIXEL: %d'%(the_pixel))
+        Plots.savefig()                
                 
-    def sequoia_mean_spectra_plot2(self, pixel_list, rms_cut, figsize=8):
-        """
-        Makes mean spectra plot of spectra from pixels in pixel_list.
-        Args:
-            pixel_list (list): list of pixel IDs to plot
-            rms_cut (float): rms cutoff value for plot
-            figsize (float): size of figure in inches (default is 8)
-        Returns:
-            none
-        """
-        fig4, ax4 = pl.subplots(4, 4, sharex='col', sharey='row', 
-            gridspec_kw={'hspace': 0, 'wspace': 0}, figsize=(figsize,figsize))
-        fig4.text(0.5, -0.1, self.ctype, ha='center')
-        for the_pixel in pixel_list:
-            pindex = np.where(self.pixel == the_pixel)[0]
-            rindex = np.where(self.rms[pindex] < rms_cut)[0]
-            ax4[np.mod(the_pixel, 4), the_pixel // 4].plot(self.caxis, 
-                np.mean(self.data[pindex[rindex]], axis=0))
- 
     def pixel_mean_spectrum_plot2(self, pixel_list, rms_cut, location, radius, use_mean=False, use_diff=False):
         """
         Overplots mean spectra plot of spectra from a pixel_list
@@ -300,13 +350,13 @@ class SpecFileViewer():
             none
         """
 
+        Plots.figure()
+        
         if radius > 0:
             dx = self.xpos - location[0]
             dy = self.ypos - location[1]
             r2 = dx*dx+dy*dy
             rad2 = radius*radius
-
-        Plots.figure()
 
         npix  =  len(pixel_list)
         nchan =  len(self.caxis)
@@ -315,23 +365,23 @@ class SpecFileViewer():
         for (i,the_pixel) in zip(range(npix),pixel_list):
             pindex = np.where(self.pixel == the_pixel)[0]
 
-            print("Warning: MAD test",pindex)
+            # print("Warning: MAD test",pindex)
             med1 = np.median(self.rms[pindex])
             std1 = mad_std(self.rms[pindex])
             if rms_cut  < 0:
                 cut1 = med1 - rms_cut*std1
             else:
                 cut1 = rms_cut
-            print("MAD:",med1,std1,cut1)
+            print("MAD:",the_pixel,med1,std1,cut1)
         
             rindex = np.where(self.rms[pindex] < cut1)[0]
             if radius > 0:
                 cindex = np.where(r2[pindex[rindex]] < rad2)[0]
-                print('Pixel %d %d' % (the_pixel, len(cindex)))
+                # print('Pixel %d %d' % (the_pixel, len(cindex)))
                 sp[i,:] = np.mean(self.data[pindex[rindex[cindex]]], axis=0)
                 #pl.plot(self.caxis, sp_i, label="%d" % the_pixel)
             else:
-                print('Pixel %d %d' % (the_pixel, len(rindex)))
+                # print('Pixel %d %d' % (the_pixel, len(rindex)))
                 sp[i,:] = np.mean(self.data[pindex[rindex]], axis=0)
                 #pl.plot(self.caxis, sp_i, label="%d" % the_pixel)
         sp_mean = np.mean(sp, axis=0)
@@ -347,7 +397,6 @@ class SpecFileViewer():
         pl.ylabel('TA*')
         pl.title('PIXEL: %s   rms_cut: %g'%(str(pixel_list),cut1))
         pl.legend()
-        
         Plots.savefig()
                 
     def write_fits(self, pixel_list, fits_file, binning=1):
@@ -394,7 +443,7 @@ class SpecFileViewer():
         #print("OLD: ",nsamp, nchan)
         #print("NEW: ",nsamp1,nchan1)
 
-        sp    = np.zeros(npix*nchan1*nsamp1).reshape(npix,nsamp1*nchan1)
+        sp    = np.zeros(npix*nchan1*nsamp1, dtype=np.float32).reshape(npix,nsamp1*nchan1)
         print("FITS file will be %d x %d x %d" % (nsamp//binning[0], nchan1//binning[1],npix))
 
         for (i,the_pixel) in zip(range(npix),pixel_list):
@@ -418,7 +467,27 @@ class SpecFileViewer():
             print("New shape:",sp.shape)
 
         hdu = fits.PrimaryHDU(sp)
-        hdu.writeto(fits_file)
+        if True:
+            # ds9 isn't able to display the WCS with this.carta
+            hdr = fits.Header()
+            # Time (Sample)
+            hdr['CRPIX1'] = 0.5 + 0.5/binning[0]
+            hdr['CRVAL1'] = 1.0
+            hdr['CDELT1'] = 1.0 * binning[0]
+            hdr['CTYPE1'] = 'T'
+            # VLSR
+            hdr['CRPIX2'] = 0.5 + 0.5/binning[1]
+            hdr['CRVAL2'] = float(self.crval.data) 
+            hdr['CDELT2'] = float(self.cdelt.data) * binning[1]  
+            hdr['CTYPE2'] = 'VELO-LSR'
+            hdr['CUNIT2'] = 'km/s'
+            # Pixel
+            hdr['CRPIX3'] = 1.0
+            hdr['CRVAL3'] = 0.0
+            hdr['CDELT3'] = 1.0
+            hdr['CTYPE3'] = 'P'
+            
+        fits.writeto(fits_file, hdu.data, hdr)
         print("Written waterfall cube to %s" % fits_file)
 
 
