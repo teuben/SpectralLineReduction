@@ -8,7 +8,7 @@
 -p SHOW_PIXEL --show_pixel SHOW_PIXEL  Show one particular pixel (default is all pixels from pix_list)
 --rms_cut RMS_CUT                      rms threshold for data [Default: 10]
 --plot_range PLOT_RANGE                set plot range for plots [Default: -1,3]
---plot_file PLOT,FILE                  Basename of output plot files, defaults to on screen.
+--plots METHOD                         Plotting method for output plot defaults to on screen.
                                        Optional file type extension after a comma, e.g. png or pdf
 --skip_tsys                            Skip the tsys plot [Default: False]
 
@@ -21,6 +21,14 @@ various visualizations
 Tsys is only present for SpecFiles created after 6-mar-2021, data produce before this needs --skip_tsys.
 
 Bug:  tsys pixel number can be wrong is not all pixels are in the SpecFile
+
+The --plots METHOD is a new feature to allow switching between interactive
+(the default method) and a batch style. For example
+    option:    --plots M51
+creates M51.1.png (and .2., .3. etc. as many as there are). But
+    option:    --plots M31,pdf,3
+ would produce M31.3.pdf (and .4., .5., etc. as many as there are).
+Plot files are silently overwritten if they existed before.
 
 """
 
@@ -45,7 +53,7 @@ def main(argv):
     pix_list        = acv.listi(av['--pix_list'],  16)
     rms_cut         = acv.listf(av['--rms_cut'],    1)
     plot_range      = acv.listf(av['--plot_range'], 2)
-    plot_file       = av['--plot_file']
+    plots           = av['--plots']
     skip_tsys       = av['--skip_tsys']
     
     if av['--show_pixel'] != None:
@@ -54,28 +62,28 @@ def main(argv):
     else:
         show_all_pixels = True
     
-    Plots.init(plot_file)
+    Plots.init(plots)
     
     SV = SpecFileViewer(input_file_name)
 
     if show_all_pixels:
+        SV.xy_position_plot()
+        #SV.sx_position_plot()
+        #SV.sy_position_plot()        
         SV.sequoia_waterfall_plot(pix_list, rms_cut, plot_range=plot_range)
         SV.sequoia_rms_plot(pix_list, rms_cut, plot_range=[0.,plot_range[1]])
         SV.sequoia_rms_histogram(pix_list, rms_cut)
         SV.sequoia_mean_spectra_plot(pix_list, rms_cut)
         if not skip_tsys: SV.sequoia_tsys_spectra_plot(pix_list)
-        SV.xy_position_plot()
-        #SV.sx_position_plot()
-        #SV.sy_position_plot()        
     else:
+        SV.xy_position_plot(False)
+        #SV.sx_position_plot(False)
+        #SV.sy_position_plot(False)
         SV.pixel_waterfall_plot(show_pixel, rms_cut, plot_range=plot_range)
         SV.pixel_rms_plot(show_pixel, rms_cut, plot_range=[0.,plot_range[1]])
         SV.pixel_rms_histogram(show_pixel, rms_cut)
         SV.pixel_mean_spectrum_plot(show_pixel, rms_cut)
         if not skip_tsys: SV.pixel_tsys_spectra_plot(show_pixel)
-        SV.xy_position_plot(False)
-        #SV.sx_position_plot(False)
-        #SV.sy_position_plot(False)
     
     Plots.show()
     
