@@ -277,7 +277,7 @@ class SpecFileViewer():
             idx = idx + 1
         Plots.savefig()
 
-    def pixel_tsys_spectrum_plot(self, the_pixel):
+    def pixel_tsys_spectra_plot(self, the_pixel):
         """
         Makes mean spectra plot of spectra from pixel the_pixel.
         Args:
@@ -290,9 +290,12 @@ class SpecFileViewer():
         if not self.have_tsys: return
         print("NEW TSYS PIC")        
         Plots.figure()
-        pindex = np.where(self.pixel == the_pixel)[0]
-        rindex = np.where(self.rms[pindex] < rms_cut)[0]
-        pl.plot(self.caxis, self.tsys[the_pixel])
+        #pindex = np.where(self.pixel == the_pixel)[0]
+        #rindex = np.where(self.rms[pindex] < rms_cut)[0]
+        idx = 0
+        (ncal,npix,nchan) = self.tsys.shape
+        for ical in range(ncal):
+            pl.plot(self.caxis, self.tsys[ical][the_pixel])
         pl.xlabel(self.ctype)
         pl.ylabel('Tsys')
         pl.title('PIXEL: %d'%(the_pixel))
