@@ -176,7 +176,8 @@ int read_spec_file(SpecFile *S, char *filename)
          xmax = S->XPos[0],
          ymin = S->YPos[0],
          ymax = S->YPos[0];
-  
+  double bs = 27.8;      // spacings between beams in the 4x4 grid
+         
   for (i=1; i<nspec; i++) {
     if (S->XPos[i] < xmin) xmin = S->XPos[i];
     if (S->XPos[i] > xmax) xmax = S->XPos[i];
@@ -184,6 +185,7 @@ int read_spec_file(SpecFile *S, char *filename)
     if (S->YPos[i] > ymax) ymax = S->YPos[i];
   }
   printf("X-range: %g %g   Y-range: %g %g arcsec\n",xmin,xmax,ymin,ymax);
+  printf("X-ramp:  %g %g   Y-ramp:  %g %g arcsec\n",xmin+3*bs,xmax-3*bs,ymin+3*bs,ymax-3*bs);
   printf("MapSize: %g x %g arcsec\n", xmax-xmin, ymax-ymin);
 
   /* Close the file, freeing all resources. */
