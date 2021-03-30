@@ -12,6 +12,7 @@ typedef struct
   int nfiles;
   char o_filename[OTF_FILE_NAME_LENGTH];
   char w_filename[OTF_FILE_NAME_LENGTH];
+  char a_filename[OTF_FILE_NAME_LENGTH];
   float resolution_size;
   float cell_size;
   float rms_cutoff;
@@ -21,7 +22,7 @@ typedef struct
   float rmax;
   int nsamples;
   float otf_jinc_a, otf_jinc_b, otf_jinc_c;
-  int beam;
+  int model;  // set if a_filename was given
   
 
   // fixed in code

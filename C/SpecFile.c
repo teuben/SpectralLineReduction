@@ -194,18 +194,6 @@ int read_spec_file(SpecFile *S, char *filename)
   return 0;
 }
 
-void make_spec_beam(SpecFile *S)
-{
-  printf("Making a SpecFile beam\n");
-  S->nspec = 1;
-  S->nchan = 1;
-  S->XPos[0] = 0.0;
-  S->YPos[0] = 0.0;
-  S->RMS[0] = 1.0;
-  S->theData[0] = 1.0;  
-}
-
-
 void free_spec_file(SpecFile *S)
 {
   free(S->Sequence);

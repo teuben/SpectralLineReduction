@@ -15,7 +15,7 @@
 int main(int argc, char *argv[])
 {
   Cube C;
-  Plane W, M;
+  Plane W, M, A;
   SpecFile S;
   ConvolveFunction CF;
   OTFParameters OTF;
@@ -107,11 +107,6 @@ int main(int argc, char *argv[])
     printf("%5.2f %8.4f\n",i*CF.delta, CF.array[i]);
 #endif
 
-  if (OTF.beam) {
-    make_spec_beam(&S);
-    fuzzy_edge = 1;
-  }
-
   if (OTF.x_extent != OTF.y_extent)
       printf("WARNING: code is not working for non-square sizes");
 
@@ -133,6 +128,9 @@ int main(int argc, char *argv[])
   initialize_plane(&M, n);
   initialize_plane_axis(&M, X_AXIS, 0.0, (n[0]-1.)/2.+1., OTF.cell_size, "X", "arcsec");
   initialize_plane_axis(&M, Y_AXIS, 0.0, (n[1]-1.)/2.+1., OTF.cell_size, "Y", "arcsec");
+
+  if (OTF.model)
+    read_fits_plane(&A, OTF.a_filename);  
 
   // rot_angle is the counter clock wise angle over which the image is rotated.
   //rot_angle = 30.0;   // PJT test
@@ -215,6 +213,8 @@ int main(int argc, char *argv[])
 	    ypos = -sinp * S.XPos[i] + cosp * S.YPos[i];
  	      
 	  }
+	  if (OTF.model) spectrum[0] = get_value(&A, xpos, ypos);
+	  
 	  ix = cube_axis_index(&C, X_AXIS, xpos);
 	  iy = cube_axis_index(&C, Y_AXIS, ypos);
 	  if( (ix>=0) && (iy>=0) )
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
 
   // dumping the spectrum at 0,0 for fun... 
   izp = plane_index(&W, 0.0, 0.0);
-  printf("Weight of %f %f is %f\n",0.0,0.0,W.plane[izp]);
+  printf("Weight at %f %f is %f\n",0.0,0.0,W.plane[izp]);
   if (W.plane[izp] == 0.0)
     printf("*** Warning: zero weights\n");
   iz = cube_z_index(&C, 0.0, 0.0);

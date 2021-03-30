@@ -82,8 +82,10 @@ void decode_pix_list(OTFParameters *OTF, char *the_list)
 	// printf("\n");
         free(tokens);
     }
+#if 0    
     for(i=0;i<16;i++)
 	printf("pixel %d use_it %d\n",i,OTF->use_pixels[i]);
+#endif
 }
 
 void decode_sample_list(OTFParameters *OTF, char *the_list)
@@ -171,6 +173,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
   //                                 // -i=
   strcpy(OTF->o_filename,"test.nc"); // -o=
   strcpy(OTF->w_filename,"");        // -w=   default is no weight file
+  strcpy(OTF->a_filename,"");        // -w=   default is no model file  
   OTF->resolution_size    = 14.;     // -l=   would be better to use the default for 115 GHz???
   OTF->cell_size          = 7.;      // -c=
   for(i=0;i<MAXPIXEL;i++) 
@@ -188,17 +191,19 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
   
   OTF->n_cell             = 5;       // -n=   // error???
   OTF->n_subcell          = 2;       // -m
+#if 0  
   OTF->model_spectrum_hpw = 5.;
   OTF->model_source_amp   = 1.;
   OTF->model_source_hpw   = 16.1;
   OTF->model_source_x     = 0.;
   OTF->model_source_y     = 0.;
   OTF->model_nchan        = 64;
+#endif
 
   OTF->sample_step        = 1.0;     // -p   ???     Xstep 
   OTF->scan_step          = 6.65;    // -q   ???     Ystep
 
-  OTF->beam               = 0;       // 
+  OTF->model              = 0;       // 
  
   // parse command line arguments
   opterr = 0;
@@ -215,6 +220,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  {"input",            required_argument, 0, 'i'},  // 20 real options here
 	  {"output",           required_argument, 0, 'o'},  //
 	  {"weight",           optional_argument, 0, 'w'},  //
+	  {"model",            optional_argument, 0, 'a'},  //
 	  {"resolution_size",  required_argument, 0, 'l'},  // --resolution
 	  {"cell_size",        required_argument, 0, 'c'},  // --cell
 	  {"pix_list",         required_argument, 0, 'u'},  // --pix_list 
@@ -229,7 +235,6 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  {"jinc_b",           required_argument, 0, '1'},  // --otf_b
 	  {"jinc_c",           required_argument, 0, '2'},  // --otf_c
 	  {"sample",           optional_argument, 0, 'b'},  // --sample
-	  {"beam",             optional_argument, 0, 'a'},  // --beam
 
 	  {"n_subcell",        required_argument, 0, 'm'},   // not passed
 	  {"sample_step",      required_argument, 0, 'p'},   // not passed
@@ -241,7 +246,7 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
       
       int option_index=0;
       //const char *optstring = "hi:o:bjl:z:c:n:f:m:s:r:0:1:2:x:y:p:q:u:";   // original w/ -b,-j
-      static const char *optstring = "i:o:w:l:c:u:z:s:x:y:f:r:n:0:1:2:b:w:ap:q:h";
+      static const char *optstring = "i:o:w:l:c:u:z:s:x:y:f:r:n:0:1:2:b:w:a:p:q:h";
       coption = getopt_long(argc, argv, optstring, long_options,&option_index);
       
       if(coption == -1)
@@ -263,6 +268,10 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  break;
 	case 'w':
 	  strcpy(OTF->w_filename,optarg);
+	  break;
+	case 'a':
+	  strcpy(OTF->a_filename,optarg);
+	  OTF->model = 1;	  
 	  break;
 	case 'l':
 	  OTF->resolution_size = atof(optarg);
@@ -320,9 +329,6 @@ void initialize_otf_parameters(OTFParameters *OTF, int argc, char *argv[])
 	  break;
 	case 'q':
 	  OTF->scan_step = atof(optarg);
-	  break;
-        case 'a':
-	  OTF->beam = 1;
 	  break;
 	default:
 	  printf("Command Line Argument Problem for %c\n",coption);

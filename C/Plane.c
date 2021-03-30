@@ -100,6 +100,7 @@ void write_fits_plane(Plane *P, char *filename)
   // create the buffer to reorder the cube to FITS standard
   buffer = (float*)malloc(P->nplane*sizeof(float));
 
+
   ic = 0;
   i=0;
   for(j=0;j<P->n[PLANE_Y_AXIS];j++)
@@ -110,6 +111,8 @@ void write_fits_plane(Plane *P, char *filename)
 	ic++;
       }
 
+
+  
   // you MUST initialize status
   status = 0;
   if((retval=fits_create_file(&fptr, filename, &status)) != 0)
@@ -185,6 +188,108 @@ void write_fits_plane(Plane *P, char *filename)
   // write the data cube
   if((retval=fits_write_img(fptr, TFLOAT, 1, P->nplane, buffer, &status)) != 0)
     print_fits_error(status);
+
+  // close the file
+  if((retval=fits_close_file(fptr, &status)) != 0)
+    print_fits_error(status);
+}
+
+//  The routines below are support to read a model, and for a given SpecFile
+//  simulate how LMT would observe it. The -a flag (or --model) is used for this.
+//
+//  Important notes and deficiencies
+//  - input map needs to be a jy/pixel convolved with the LMT beam.
+//    and CRPIX is ignored (see next item)
+//  - WCS is that of the original specfile
+//  - X and Y confusion for non-sq. maps, this needs a real fix
+//  - get_value uses "nearest" pixel, should do an interpolation
+
+float get_value(Plane *P, float x, float y)
+{
+  int ix = plane_axis_index(P, PLANE_X_AXIS, x);
+  int iy = plane_axis_index(P, PLANE_Y_AXIS, y);
+  if (ix<0 || iy<0) return 0.0;
+  int izp = plane_index(P, x, y);
+  // should never hapen
+  if (izp < 0) printf("PIX: BAD %g %g -> %d %d  %d\n",x,y,ix,iy,izp);
+  return  P->plane[izp];
+}
+
+void read_fits_plane(Plane *P, char *filename)
+{
+  int i,j,k,ii,ic;
+  int retval, status;
+  int naxis;
+  long naxes[3], obsnum;
+  float equinox;
+  char radesys[20];
+  float *buffer;
+  float nulval = 0.0;
+  int anynul;
+  fitsfile *fptr;
+
+  char ctype[20], cunit[20], comment[60];
+  float crval, cdelt, crpix, bmaj, bpa;
+
+  // code not done yet
+  printf("Warning: reading a model in channel-0 is an experimental feature\n");
+  printf("There are still several limitations\n");
+
+  status = 0;
+  if((retval=fits_open_file(&fptr, filename, 0, &status)) != 0)
+    print_fits_error(status);      
+
+  naxis = 2;
+  naxes[0] = naxes[1] = 0;
+  if((retval=fits_get_img_size(fptr, naxis, naxes, &status)) != 0)
+    print_fits_error(status);
+  printf("NAXIS: %ld %ld\n",naxes[0],naxes[1]);
+  
+  P->n[PLANE_X_AXIS] = naxes[0];
+  P->n[PLANE_Y_AXIS] = naxes[1];
+  P->nplane = naxes[0] * naxes[1];
+
+  // create the buffer to reorder the cube to FITS standard
+  buffer = (float*)malloc(P->nplane*sizeof(float));
+  P->plane = (float*)malloc(P->nplane*sizeof(float));
+
+  //int fits_read_img / ffgpv
+  //(fitsfile *fptr, int  datatype, long firstelem, long nelements,
+  // DTYPE *nulval, > DTYPE *array, int *anynul, int *status)
+
+  // read the data cube
+  if((retval=fits_read_img(fptr, TFLOAT, 1, P->nplane, &nulval, buffer, &anynul, &status)) != 0)
+    print_fits_error(status);
+
+
+  if((retval=fits_read_key(fptr, TFLOAT, "CRPIX1", &P->crpix[0], comment, &status)) != 0)  
+    print_fits_error(status);
+  if((retval=fits_read_key(fptr, TFLOAT, "CRPIX2", &P->crpix[1], comment, &status)) != 0)  
+    print_fits_error(status);
+  printf("CRPIX: %g %g\n",P->crpix[0], P->crpix[1]);
+  
+  if((retval=fits_read_key(fptr, TFLOAT, "CDELT1", &P->cdelt[0], comment, &status)) != 0)  
+    print_fits_error(status);
+  if((retval=fits_read_key(fptr, TFLOAT, "CDELT2", &P->cdelt[1], comment, &status)) != 0)  
+    print_fits_error(status);
+  P->cdelt[0] *= 3600;
+  P->cdelt[1] *= 3600;
+  printf("CDELT: %g %g\n",P->cdelt[0], P->cdelt[1]);
+  
+  P->crval[0] = 0.0;
+  P->crval[1] = 0.0;
+  printf("CRVAL: %g %g\n",P->crval[0], P->crval[1]);
+
+
+  ic = 0;
+  i=0;
+  for(j=0;j<P->n[PLANE_Y_AXIS];j++)
+    for(k=0;k<P->n[PLANE_X_AXIS];k++)
+      {
+	ii = i + j*P->n[PLANE_X_AXIS] + (P->n[PLANE_X_AXIS]-k-1);
+	P->plane[ii] = buffer[ic] ;
+	ic++;
+      }
 
   // close the file
   if((retval=fits_close_file(fptr, &status)) != 0)
