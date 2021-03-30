@@ -13,7 +13,7 @@
 --noise_sigma NOISE_SIGMA     noise weighting - apply if > 0 [default: 1]
 --x_extent X_EXTENT           x extent of cube (arcsec) note: cube will go to +/- x_extent [Default: 400]
 --y_extent Y_EXTENT           y extent of cube (arcsec) note: cube will go to +/- y_extent [Default: 400]
---otf_select OTF_SELECT       otf filter code one of (0=box, 1=jinc,2=gaussian) [default: 1)]
+--otf_select OTF_SELECT       otf filter code one of (0=box,1=jinc,2=gaussian,3=triangle) [default: 1]
 --rmax RMAX                   maximum radius of convolution (units lambda/D) [default: 3.0]
 --n_samples N_SAMPLES         number of samples in convolution filter [default: 256]
 --otf_a OTF_A                 OTF A parameter [default: 1.1]
@@ -61,7 +61,7 @@ from lmtslr.utils.argparser import HandleGridOptions
 
 
 def main(argv):
-    av = docopt(__doc__,options_first=True, version='0.1')
+    av = docopt(__doc__,options_first=True, version='0.2')
     print(av)   # debug
 
     # check to see whether output files exists and remove it if it does
