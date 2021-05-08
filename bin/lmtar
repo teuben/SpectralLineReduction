@@ -1,0 +1,37 @@
+#! /bin/bash
+#
+#    List contents on DATA_LMT based on matching one or more words in series
+#
+
+log=$DATA_LMT/data_lmt.log
+
+if [ ! -e $log ]; then
+    echo "No $log, generate this as follows: (this can take a long time)"
+    echo '     lmtinfo.py $DATA_LMT  | sort -r > $DATA_LMT/data_lmt.log'
+    exit 0
+fi
+
+if [ $# = 0  ]; then
+    echo Usage: lmtls tar/tgz OBSNUM [OBSNUM ...]
+    echo Finds case insensitive matches in the $log
+    exit 0
+fi
+
+tar=$1
+
+touch $tar
+tarfile=$(realpath $tar)
+
+# echo $tarfile
+
+shift
+
+
+cd $DATA_LMT
+
+ls -l  $(lmtar.py $*)
+
+tar cvf $tarfile $(lmtar.py $*)
+
+echo Written $tar
+

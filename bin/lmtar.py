@@ -28,22 +28,24 @@ from  docopt import docopt
 
 #arguments = docopt(__doc__,options_first=True, version='0.1')
 
-obsnum  = int(sys.argv[1])
-obsnum5 = '%d' % obsnum
-obsnum6 = '%06d' % obsnum
-
-
 data_lmt = os.environ['DATA_LMT']
-os.chdir(data_lmt)
-fn = glob.glob('ifproc/ifproc_*_%s*.nc' % obsnum6)
-for f in fn:
-    print(f)
 
-fn = glob.glob('spectrometer/roach?/roach?_%s_*nc' % obsnum5)
-for f in fn:
-    if f.find('allantest') > 0: continue
-    print(f)
+for obsnum in sys.argv[1:]:
+    obsnum  = int(obsnum)
+    obsnum5 = '%d' % obsnum
+    obsnum6 = '%06d' % obsnum
 
-fn = glob.glob('RedshiftChassis?/RedshiftChassis*_%s_*.nc'  % obsnum6)
-for f in fn:
-    print(f)
+
+    os.chdir(data_lmt)
+    fn = glob.glob('ifproc/ifproc_*_%s*.nc' % obsnum6)
+    for f in fn:
+        print(f)
+
+    fn = glob.glob('spectrometer/roach?/roach?_%s_*nc' % obsnum5)
+    for f in fn:
+        if f.find('allantest') > 0: continue
+        print(f)
+
+    fn = glob.glob('RedshiftChassis?/RedshiftChassis*_%s_*.nc'  % obsnum6)
+    for f in fn:
+        print(f)
