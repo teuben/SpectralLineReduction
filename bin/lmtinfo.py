@@ -79,6 +79,8 @@ def slr_summary(ifproc, rc=False):
     if obspgm=='Map':
         xlen = nc.variables['Header.Map.XLength'][0] * 206264.806
         ylen = nc.variables['Header.Map.YLength'][0] * 206264.806
+        xram = nc.variables['Header.Map.XRamp'][0]   * 206264.806
+        yram = nc.variables['Header.Map.YRamp'][0]   * 206264.806
         hpbw = nc.variables['Header.Map.HPBW'][0]    * 206264.806
     else:
         xlen = 0
@@ -119,6 +121,8 @@ def slr_summary(ifproc, rc=False):
         print('# SkyOff=%g %g' % (az1,el1))
         print('# bufpos=%s' % str(ubufpos))
         print('# HPBW=%g arcsec' % hpbw)
+        print('# XYLength=%g %g arcsec' % (xlen,ylen))
+        print('# XYRamp=%g %g arcsec' % (xram,yram))
         print('vlsr=%g        # km/s' % vlsr)
         print('skyfreq=%g     # GHz' % skyfreq)
         print('restfreq=%g    # Ghz' % restfreq)
