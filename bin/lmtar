@@ -12,8 +12,8 @@ if [ ! -e $log ]; then
 fi
 
 if [ $# = 0  ]; then
-    echo Usage: lmtls tar/tgz OBSNUM [OBSNUM ...]
-    echo Finds case insensitive matches in the $log
+    echo Usage: lmtar tarfile OBSNUM [OBSNUM ...]
+    echo Find all RAW data with given OBSNUM in the tarfile
     exit 0
 fi
 
