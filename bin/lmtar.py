@@ -41,6 +41,7 @@ for f in fn:
 
 fn = glob.glob('spectrometer/roach?/roach?_%s_*nc' % obsnum5)
 for f in fn:
+    if f.find('allantest') > 0: continue
     print(f)
 
 fn = glob.glob('RedshiftChassis?/RedshiftChassis*_%s_*.nc'  % obsnum6)
