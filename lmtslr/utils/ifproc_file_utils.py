@@ -7,7 +7,7 @@ def lookup_ifproc_file(obsnum, path='/data_lmt/ifproc/', debug=False):
     Returns the path to the NetCDF data file for a given obsnum.
     Args:
         obsnum (int): observation number of target observation
-        path (str): path to the data directory (default is 
+        path (str): path to the data directory where ifproc files are (default is 
             '/data_lmt/ifproc/')
     Returns:
         filename (str): path to NetCDF data file of target observation
