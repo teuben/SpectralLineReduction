@@ -152,7 +152,6 @@ class SpecFile():
         time0 = time.time()
 
         fast_nc = True
-        fast_nc = False
         if fast_nc:
             # find total nspec to allocate arrays to make
             count = 0
