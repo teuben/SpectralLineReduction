@@ -7,7 +7,7 @@
 -O OBSNUM --obsnum OBSNUM          The obsnum, something like 79448. 
 -b BANK --bank BANK                Spectral Bank for processing [default: 0]
 --pix_list PIX_LIST                Comma separated list of pixels [Default: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
---eliminate_list ELIMINATE_LIST    Comma separated list of pixels **do we reallly need this **
+--eliminate_list ELIMINATE_LIST    Comma separated list of channels to be blanked
 --use_cal                          Use Calibration scan
 --tsys TSYS                        If use_cal is False, value of Tsys to use [default: 250.0] ** not used **
 --use_otf_cal                      Use calibration within OTF scan (default: False)
