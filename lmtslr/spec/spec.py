@@ -561,7 +561,7 @@ class RoachSpec():
             #print("TSYS: ",self.tsys_spectrum[:])
             # @todo can we use pixel= this way?
             pixel = 4*self.roach_id + self.roach_input
-            print("TSYS[%d] cal = %g +/- %g" % (pixel,self.tsys, tsysstd))
+            print("TSYS[%d] = %g +/- %g (%d channels)" % (pixel,self.tsys, tsysstd, len(self.tsys_spectrum)))
         else:
             print('ObsNum %d Roach %d does not have calibration data'%(
                 self.obsnum, self.roach_id))
