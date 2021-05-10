@@ -14,6 +14,7 @@ def get_data_lmt(path):
          1) if path is given, return that
          2) if $DATA_LMT is present, return that
          3) return the LMT default '/data_lmt'
+         if all these fail, you code is likely to fail to find the data
     """
     if path != None:
         return path
