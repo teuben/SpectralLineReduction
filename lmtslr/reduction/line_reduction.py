@@ -49,6 +49,9 @@ class Line(object):
         self.dxdc = self.xarray[1]-self.xarray[0]
         self.xname = xlabel
 
+    def __len__(self):
+        return self.nchan
+
     def eliminate(self, list):
         """
         Sets yarray values to nan according to input list so that 
@@ -577,6 +580,9 @@ class LineData(LineDataHeader):
         else:
             #self.tarray = data * 0 + 1
             self.tarray = None
+
+    def __len__(self):
+        return len(self.data)
 
     def line(self):
         """
