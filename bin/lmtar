@@ -33,5 +33,6 @@ ls -l  $(lmtar.py $*)
 
 tar cvf $tarfile $(lmtar.py $*)
 
-echo Written $tar
+echo Written $tar :
+ls -l $tarfile
 
