@@ -81,7 +81,10 @@ def slr_summary(ifproc, rc=False):
         skyfreq  = nc.variables['Header.Msip1mm.SkyFreq'][0]
         restfreq = nc.variables['Header.Msip1mm.LineFreq'][0]
         instrument = '1MM'        
-        bbtime = nc.variables['Data.IfProc.BasebandTime'][:,0]
+        bbtime = nc.variables['Data.IfProc.BasebandTime'][:]
+        if len(bbtime.shape) > 1:
+            print('Warning: PJT1',bbtime,'pjt2',bbtime[0],'pjt3',bbtime.shape)
+            bbtime = bbtime[:,0]
         
     bufpos = nc.variables['Data.TelescopeBackend.BufPos'][:]
     ubufpos = np.unique(bufpos)
@@ -120,8 +123,6 @@ def slr_summary(ifproc, rc=False):
     
     # Header.Dcs.ObsGoal
     # Header.ScanFile.Valid = 1 ;
-
-    print('PJT1',bbtime,'pjt2',bbtime[0],'pjt3',bbtime.shape)
 
     t0 = float(bbtime[0])
     t1 = float(bbtime[-1])
