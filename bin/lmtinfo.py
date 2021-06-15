@@ -75,6 +75,10 @@ def slr_summary(ifproc, rc=False):
     ubufpos = np.unique(bufpos)
     # Header.Dcs.ObsNum 
     obspgm = b''.join(nc.variables['Header.Dcs.ObsPgm'][:]).decode().strip()
+    # Header.Dcs.ProjectId
+    pid = "Unknown"
+    pid = b''.join(nc.variables['Header.Dcs.ProjectId'][:]).decode().strip()
+    
     # the following Map only if obspgm=='Map'
     if obspgm=='Map':
         xlen = nc.variables['Header.Map.XLength'][0] * 206264.806
@@ -85,6 +89,8 @@ def slr_summary(ifproc, rc=False):
     else:
         xlen = 0
         ylen = 0
+        xram = 0
+        yram = 0
         hpbw = 0
 
     date_obs = nc.variables['Data.TelescopeBackend.TelTime'][0].tolist()
@@ -100,7 +106,6 @@ def slr_summary(ifproc, rc=False):
 
     tint = nc.variables['Header.Dcs.IntegrationTime'][0]
     
-    # Header.Dcs.ProjectId
     # Header.Dcs.ObsGoal
     # Header.ScanFile.Valid = 1 ;
 
@@ -117,7 +122,8 @@ def slr_summary(ifproc, rc=False):
         print('# date-obs="%s"' % date_obs)
         print('# skytime=%g sec' % tsky)
         print('# inttime=%g sec' % tint)
-        print('# obspgm="%s"' % obspgm)
+        print('obspgm="%s"' % obspgm)
+        print('ProjectId="%s"' % pid)
         print('# SkyOff=%g %g' % (az1,el1))
         print('# bufpos=%s' % str(ubufpos))
         print('# HPBW=%g arcsec' % hpbw)
@@ -133,7 +139,7 @@ def slr_summary(ifproc, rc=False):
         # @todo https://github.com/astroumd/lmtoy/issues/9     xlen needs to be equal to ylen
         print('x_extent=%g   # arcsec' % xlen)
         print('y_extent=%g   # arcsec' % ylen)
-        
+        print('instrument="SEQ"')
         print("# </lmtinfo>")
     else:    
         print("%-20s %7s  %-5s %-30s %8.4f %5.f    %6.1f  %10.6f %10.6f  %5.1f %5.1f  %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, tint, ra, dec, az, el, az1,el1))
@@ -174,6 +180,9 @@ def rsr_summary(rsr_file, rc=False):
 
     # Header.Source.SourceName
     src = b''.join(nc.variables['Header.Source.SourceName'][:]).decode().strip()
+
+    pid = "Unknown"
+    pid = b''.join(nc.variables['Header.Dcs.ProjectId'][:]).decode().strip()
     
     # Header.Dcs.ObsNum = 33551 ;
     obsnum = nc.variables['Header.Dcs.ObsNum'][0]
@@ -199,8 +208,31 @@ def rsr_summary(rsr_file, rc=False):
 
     nc.close()
 
-    # one line summary
-    print("%-20s %7d  %-5s %-30s     RSR      0    %6.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
+    if rc:
+        print('# <lmtinfo>')
+        print('# %s' % rsr_file)
+        print('# date-obs="%s"' % date_obs)
+        #print('# skytime=%g sec' % tsky)
+        print('# inttime=%g sec' % tint)
+        print('obspgm="%s"' % obspgm)
+        print('ProjectId="%s"' % pid)
+        #print('# SkyOff=%g %g' % (az1,el1))
+        #print('# bufpos=%s' % str(ubufpos))
+        #print('# HPBW=%g arcsec' % hpbw)
+        #print('# XYLength=%g %g arcsec' % (xlen,ylen))
+        #print('# XYRamp=%g %g arcsec' % (xram,yram))
+        print('src="%s"' % src)
+        #resolution = math.ceil(1.0 * 299792458 / skyfreq / 1e9 / 50.0 * 206264.806)
+        #print('resolution=%g  # arcsec' % resolution)
+        #print('cell=%g   # arcsec' % (resolution/2.0))
+        # @todo https://github.com/astroumd/lmtoy/issues/9     xlen needs to be equal to ylen
+        #print('x_extent=%g   # arcsec' % xlen)
+        #print('y_extent=%g   # arcsec' % ylen)
+        print('instrument="RSR"')
+        print("# </lmtinfo>")
+
+    else:     # one line summary
+        print("%-20s %7d  %-5s %-30s     RSR      0    %6.1f  %10.6f %10.6f  %5.1f %5.1f" %   (date_obs, obsnum, obspgm, src, tint, ra, dec, az, el))
 
 #   SLR
 #   print("%-20s %7s  %-5s %-30s %g %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, dt))
@@ -284,16 +316,13 @@ elif len(sys.argv) == 3:
         slr_summary(ifproc,True)
     else:
         globs = '%s/RedshiftChassis?/RedshiftChassis?_*%s*.nc'  % (path,obsnum)
-        print("Trying RSR %s" % globs)
+        # print("Trying RSR %s" % globs)
         fn = glob.glob(globs)
         if len(fn) > 0:
-            for f in fn:
-                print(f)
+            rsr_summary(fn[0], rc=True)
         else:
             print("Warning - no RSR files found")
 else:
                                                      # no other modes
     print("Usage : %s [path] obsnum" % sys.argv[0])
     sys.exit(0)
-
-
