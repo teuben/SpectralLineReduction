@@ -11,6 +11,10 @@
 #      http://187.248.54.232/cgi-bin/lmtmc/mc_sql.cgi?-s=2018-12-15&-e=2018-12-20&-project=&-obsGoal=all&-format=html&-instrument=all
 #
 #  @todo       show with "0123" that a roach/chassis is present. If not, put a * , e.g. "01*3" means roach2 is missing.
+#              ifproc            uses %06d_%02d_%04d for ObsNum,SubObsNum,ScanNum
+#              spectrometer      uses %d_%d_%d
+#              RedshiftChassisN  uses %06d_%02d_%04d 
+#
 #
 """
 Usage: lmtinfo.py OBSNUM
@@ -68,9 +72,17 @@ def slr_summary(ifproc, rc=False):
     nc = netCDF4.Dataset(ifproc)
     vlsr = nc.variables['Header.Source.Velocity'][0]
     src = b''.join(nc.variables['Header.Source.SourceName'][:]).decode().strip()
-    skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
-    restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
-    bbtime = nc.variables['Data.IfProc.BasebandTime'][:]
+    if 'Header.Sequoia.SkyFreq' in nc.variables:
+        skyfreq  = nc.variables['Header.Sequoia.SkyFreq'][0]
+        restfreq = nc.variables['Header.Sequoia.LineFreq'][0]
+        instrument = 'SEQ'
+        bbtime = nc.variables['Data.IfProc.BasebandTime'][:]
+    else:
+        skyfreq  = nc.variables['Header.Msip1mm.SkyFreq'][0]
+        restfreq = nc.variables['Header.Msip1mm.LineFreq'][0]
+        instrument = '1MM'        
+        bbtime = nc.variables['Data.IfProc.BasebandTime'][:,0]
+        
     bufpos = nc.variables['Data.TelescopeBackend.BufPos'][:]
     ubufpos = np.unique(bufpos)
     # Header.Dcs.ObsNum 
@@ -109,6 +121,8 @@ def slr_summary(ifproc, rc=False):
     # Header.Dcs.ObsGoal
     # Header.ScanFile.Valid = 1 ;
 
+    print('PJT1',bbtime,'pjt2',bbtime[0],'pjt3',bbtime.shape)
+
     t0 = float(bbtime[0])
     t1 = float(bbtime[-1])
     t2 = float(bbtime[-2])
@@ -139,7 +153,7 @@ def slr_summary(ifproc, rc=False):
         # @todo https://github.com/astroumd/lmtoy/issues/9     xlen needs to be equal to ylen
         print('x_extent=%g   # arcsec' % xlen)
         print('y_extent=%g   # arcsec' % ylen)
-        print('instrument="SEQ"')
+        print('instrument="%s"' % instrument)
         print("# </lmtinfo>")
     else:    
         print("%-20s %7s  %-5s %-30s %8.4f %5.f    %6.1f  %10.6f %10.6f  %5.1f %5.1f  %g %g" % (date_obs, fn[2], obspgm, src, restfreq, vlsr, tint, ra, dec, az, el, az1,el1))
