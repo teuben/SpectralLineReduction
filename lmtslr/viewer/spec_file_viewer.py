@@ -69,7 +69,10 @@ class SpecFileViewer():
         fig1.text(0.5, 0.1, 'Sample', ha='center')
         for the_pixel in pixel_list:
             pindex = np.where(self.pixel == the_pixel)[0]
-            rindex = np.where(self.rms[pindex] < rms_cut)[0]
+            if rms_cut < 0:
+                rindex = np.where(self.rms[pindex] >= 0)[0]
+            else:
+                rindex = np.where(self.rms[pindex] < rms_cut)[0]
             ax1[np.mod(the_pixel, 4), the_pixel // 4].imshow(
                 self.data[pindex[rindex]].transpose(), origin='lower', 
                 extent=[0, float(len(rindex)), self.caxis[0], self.caxis[-1]],
@@ -92,7 +95,10 @@ class SpecFileViewer():
         """
         Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
-        rindex = np.where(self.rms[pindex] < rms_cut)[0]
+        if rms_cut < 0:
+            rindex = np.where(self.rms[pindex] >= 0)[0]
+        else:
+            rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.imshow(self.data[pindex[rindex]].transpose(), origin='lower', 
                   extent=[0, float(len(rindex)), self.caxis[0], 
                   self.caxis[-1]], clim=plot_range, aspect='auto')
@@ -123,7 +129,11 @@ class SpecFileViewer():
 
         for the_pixel in pixel_list:
             pindex = np.where(self.pixel == the_pixel)[0]
-            rindex = np.where(self.rms[pindex] < rms_cut)[0]
+            if rms_cut < 0:
+                rindex = np.where(self.rms[pindex] >= 0)[0]
+            else:
+                rindex = np.where(self.rms[pindex] < rms_cut)[0]
+            
             ax2[np.mod(the_pixel,4), the_pixel // 4].plot(
                 self.rms[pindex[rindex]], 'k.')
             #ax2[np.mod(the_pixel,4), the_pixel//4].text(0.05*len(rindex),plot_range[0] + 0.9*(plot_range[-1]-plot_range[0]), '%d'%(the_pixel))
@@ -143,7 +153,10 @@ class SpecFileViewer():
         """
         Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
-        rindex = np.where(self.rms[pindex] < rms_cut)[0]
+        if rms_cut < 0:
+            rindex = np.where(self.rms[pindex] >= 0)[0]
+        else:
+            rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.plot(self.rms[pindex[rindex]], 'k.')
         pl.ylim(plot_range)
         pl.ylabel('RMS')
@@ -225,7 +238,10 @@ class SpecFileViewer():
         fig3.text(0.5, -0.1, 'RMS', ha='center')
         for the_pixel in pixel_list:
             pindex = np.where(self.pixel == the_pixel)[0]
-            rindex = np.where(self.rms[pindex] < rms_cut)[0]
+            if rms_cut < 0:
+                rindex = np.where(self.rms[pindex] >= 0)[0]
+            else:
+                rindex = np.where(self.rms[pindex] < rms_cut)[0]
             ax3[np.mod(the_pixel, 4), the_pixel // 4].hist(
                 self.rms[pindex[rindex]], bins=np.arange(0,3.02,.02))
         Plots.savefig()
@@ -242,7 +258,10 @@ class SpecFileViewer():
         """
         Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
-        rindex = np.where(self.rms[pindex] < rms_cut)[0]
+        if rms_cut < 0:
+            rindex = np.where(self.rms[pindex] >= 0)[0]
+        else:
+            rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.hist(self.rms[pindex[rindex]],bins = np.arange(0,3.02,.02))
         pl.xlabel('RMS')
         pl.ylabel('N')
@@ -317,7 +336,10 @@ class SpecFileViewer():
         fig4.text(0.5, -0.1, self.ctype, ha='center')
         for the_pixel in pixel_list:
             pindex = np.where(self.pixel == the_pixel)[0]
-            rindex = np.where(self.rms[pindex] < rms_cut)[0]
+            if rms_cut < 0:
+                rindex = np.where(self.rms[pindex] >= 0)[0]
+            else:
+                rindex = np.where(self.rms[pindex] < rms_cut)[0]
             ax4[np.mod(the_pixel, 4), the_pixel // 4].plot(self.caxis, 
                 np.mean(self.data[pindex[rindex]], axis=0))
         Plots.savefig()
@@ -334,7 +356,10 @@ class SpecFileViewer():
         """
         Plots.figure()
         pindex = np.where(self.pixel == the_pixel)[0]
-        rindex = np.where(self.rms[pindex] < rms_cut)[0]
+        if rms_cut < 0:
+            rindex = np.where(self.rms[pindex] >= 0)[0]
+        else:
+            rindex = np.where(self.rms[pindex] < rms_cut)[0]
         pl.plot(self.caxis, np.mean(self.data[pindex[rindex]], axis=0))
         pl.xlabel(self.ctype)
         pl.ylabel('TA*')
